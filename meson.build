@@ -2159,7 +2159,7 @@ foreach ext : arch_ext_list_arm
 endforeach
 
 if get_option('b_lto')
-  conf.set10('inline_asm_direct_symbol_refs', 0)
+  conf.set10('inline_asm_direct_symbol_refs', false)
 endif
 
 extern_things = [
@@ -2612,6 +2612,7 @@ foreach built_lib : built_libs
 endforeach
 
 built_exe_list = []
+
 if not get_option('cli').disabled()
   foreach program : program_list
     if conf.get(program) == 1
