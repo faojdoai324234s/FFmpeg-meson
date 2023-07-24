@@ -2419,7 +2419,7 @@ foreach ext : arch_ext_list_arm
 endforeach
 
 if get_option('b_lto')
-  conf.set10('inline_asm_direct_symbol_refs', 0)
+  conf.set10('inline_asm_direct_symbol_refs', false)
 endif
 
 extern_things = [
@@ -2895,6 +2895,7 @@ foreach built_lib : built_libs
 endforeach
 
 built_exe_list = []
+
 if not get_option('cli').disabled()
   foreach program : program_list
     if conf.get(program) == 1
@@ -2935,8 +2936,6 @@ foreach built_exe : built_exe_list
 
   set_variable('@0@_exe'.format(built_exe[0]), exe)
 endforeach
-
-conf.get('threads')
 
 pkg = import('pkgconfig')
 
