@@ -2408,6 +2408,78 @@ endif
 
 makedef_args += ['--prefix', extern_prefix]
 
+final_conf = configuration_data()
+
+if meson.version().version_compare('>=1.1.0')
+  ffmpeg_configuration = meson.build_options().strip()
+else
+  extractor = find_program('capture_build_options.py', required: true)
+  ffmpeg_configuration = run_command(extractor, check: true).stdout().strip()
+endif
+final_conf.set_quoted('FFMPEG_CONFIGURATION', ffmpeg_configuration)
+final_conf.set('CONFIG_THIS_YEAR', 2022)
+final_conf.set_quoted('FFMPEG_DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
+final_conf.set_quoted('AVCONV_DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
+final_conf.set_quoted('CC_IDENT', '@0@ @1@'.format(cc.get_id(), cc.version()))
+final_conf.set_quoted('BUILDSUF', '')
+final_conf.set_quoted('SLIBSUF', host_machine.system() == 'windows' ? '.dll' : '.so')
+final_conf.set('SWS_MAX_FILTER_SIZE', 256)
+final_conf.set('EXTERN_ASM', extern_prefix)
+final_conf.set_quoted('EXTERN_PREFIX', extern_prefix)
+
+if not get_option('nonfree').disabled()
+  license = 'nonfree and unredistributable'
+elif not get_option('gpl').disabled() and not get_option('version3').disabled()
+  license = 'GPL version 3 or later'
+elif not get_option('version3').disabled()
+  license = 'LGPL version 3 or later'
+elif not get_option('gpl').disabled()
+  license = 'GPL version 2 or later'
+else
+  license = 'LGPL version 2.1 or later'
+endif
+final_conf.set_quoted('FFMPEG_LICENSE', license)
+message('License: ' + license)
+
+if not get_option('version3').disabled()
+  if not get_option('gpl').disabled()
+    conf.set('gplv3', 1)
+  else
+    conf.set('lgplv3', 1)
+  endif
+endif
+
+conf.set('mmx2', conf.get('mmxext'))
+
+foreach restrict_kw : ['restrict', '__restrict__', '__restrict', '']
+  if not final_conf.has('av_restrict') and cc.compiles('void foo(char * @0@ p);'.format(restrict_kw))
+    final_conf.set('av_restrict', restrict_kw)
+  endif
+endforeach
+
+foreach a: arch_list
+  final_conf.set('ARCH_@0@'.format(a.to_upper()), conf.get(a.to_lower()))
+endforeach
+
+foreach have: have_list
+  final_conf.set('HAVE_@0@'.format(have.to_upper()), conf.get(have.to_lower()))
+endforeach
+
+foreach config: config_list + config_extra + all_components
+  final_conf.set('CONFIG_@0@'.format(config.to_upper()), conf.get(config.to_lower()))
+endforeach
+
+config_h = configure_file(
+  output: 'config.h',
+  configuration: final_conf,
+)
+
+config_asm = configure_file(
+  output: 'config.asm',
+  output_format: 'nasm',
+  configuration: final_conf,
+)
+
 foreach built_lib : built_libs
   sources = get_variable('lib@0@_sources'.format(built_lib[0])) + [ffversion_h]
   x86asm_sources = []
@@ -2421,7 +2493,7 @@ foreach built_lib : built_libs
     sources += windows.compile_resources(
       'lib@0@/@1@res.rc'.format(built_lib[0], built_lib[0]),
       include_directories: common_incs,
-      depends: ffversion_h
+      depends: ffversion_h,
     )
   endif
 
@@ -2542,7 +2614,7 @@ foreach built_lib : built_libs
     endif
   endif
 
-  static_lib = static_library('@0@-static'.format(built_lib[0]), sources + gen_objects,
+  static_lib = static_library('@0@-static'.format(built_lib[0]), sources + gen_objects + [config_h],
     dependencies: deps,
     include_directories: common_incs,
     link_with: link_with,
@@ -2643,7 +2715,7 @@ foreach built_exe : built_exe_list
 
   deps = common_deps + optional_deps
 
-  exe = executable(built_exe, sources,
+  exe = executable(built_exe, sources + [config_h],
     install: true,
     dependencies: deps,
     include_directories: common_incs,
@@ -2676,78 +2748,6 @@ foreach pkg_info : pkg_infos
     version: get_variable(libname + '_version')
   )
 endforeach
-
-final_conf = configuration_data()
-
-if meson.version().version_compare('>=1.1.0')
-  ffmpeg_configuration = meson.build_options().strip()
-else
-  extractor = find_program('capture_build_options.py', required: true)
-  ffmpeg_configuration = run_command(extractor, check: true).stdout().strip()
-endif
-final_conf.set_quoted('FFMPEG_CONFIGURATION', ffmpeg_configuration)
-final_conf.set('CONFIG_THIS_YEAR', 2022)
-final_conf.set_quoted('FFMPEG_DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
-final_conf.set_quoted('AVCONV_DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
-final_conf.set_quoted('CC_IDENT', '@0@ @1@'.format(cc.get_id(), cc.version()))
-final_conf.set_quoted('BUILDSUF', '')
-final_conf.set_quoted('SLIBSUF', host_machine.system() == 'windows' ? '.dll' : '.so')
-final_conf.set('SWS_MAX_FILTER_SIZE', 256)
-final_conf.set('EXTERN_ASM', extern_prefix)
-final_conf.set_quoted('EXTERN_PREFIX', extern_prefix)
-
-if not get_option('nonfree').disabled()
-  license = 'nonfree and unredistributable'
-elif not get_option('gpl').disabled() and not get_option('version3').disabled()
-  license = 'GPL version 3 or later'
-elif not get_option('version3').disabled()
-  license = 'LGPL version 3 or later'
-elif not get_option('gpl').disabled()
-  license = 'GPL version 2 or later'
-else
-  license = 'LGPL version 2.1 or later'
-endif
-final_conf.set_quoted('FFMPEG_LICENSE', license)
-message('License: ' + license)
-
-if not get_option('version3').disabled()
-  if not get_option('gpl').disabled()
-    conf.set('gplv3', 1)
-  else
-    conf.set('lgplv3', 1)
-  endif
-endif
-
-conf.set('mmx2', conf.get('mmxext'))
-
-foreach restrict_kw : ['restrict', '__restrict__', '__restrict', '']
-  if not final_conf.has('av_restrict') and cc.compiles('void foo(char * @0@ p);'.format(restrict_kw))
-    final_conf.set('av_restrict', restrict_kw)
-  endif
-endforeach
-
-foreach a: arch_list
-  final_conf.set('ARCH_@0@'.format(a.to_upper()), conf.get(a.to_lower()))
-endforeach
-
-foreach have: have_list
-  final_conf.set('HAVE_@0@'.format(have.to_upper()), conf.get(have.to_lower()))
-endforeach
-
-foreach config: config_list + config_extra + all_components
-  final_conf.set('CONFIG_@0@'.format(config.to_upper()), conf.get(config.to_lower()))
-endforeach
-
-configure_file(
-  output: 'config.h',
-  configuration: final_conf,
-)
-
-configure_file(
-  output: 'config.asm',
-  output_format: 'nasm',
-  configuration: final_conf,
-)
 
 # Put this at the end so people see it
 if conf.get('x86_32') == 1 and conf.get('asm') == 1 and cc.get_id() == 'msvc' and cc.version().version_compare('<19.30')
