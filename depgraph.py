@@ -841,7 +841,8 @@ GRAPH = {'aac_adtstoasc_bsf': {'select': ['adts_header']},
  'png_decoder': {'deps': ['zlib']},
  'png_encoder': {'deps': ['zlib'], 'select': ['llvidencdsp']},
  'podpages': {'deps': ['perl']},
- 'postproc': {'deps': ['avutil', 'gpl'], 'suggest': ['libm', 'stdatomic']},
+ # See configure line 7293 -- requirement is a sham
+ 'postproc': {'deps': ['avutil'], 'suggest': ['libm', 'stdatomic']}, # MANUAL
  'power8': {'deps': ['vsx']},
  'pp7_filter': {'deps': ['gpl']},
  'pp_filter': {'deps': ['gpl', 'postproc']},
