@@ -27,6 +27,7 @@ libavutil_sources = files(
   'encryption_info.c',
   'error.c',
   'eval.c',
+  'executor.c',
   'fifo.c',
   'file.c',
   'file_open.c',
@@ -82,6 +83,7 @@ libavutil_sources = files(
   'uuid.c',
   'version.c',
   'video_enc_params.c',
+  'video_hint.c',
   'film_grain_params.c',
 )
 
@@ -116,6 +118,7 @@ libavutil_headers = files(
   'encryption_info.h',
   'error.h',
   'eval.h',
+  'executor.h',
   'fifo.h',
   'file.h',
   'frame.h',
@@ -176,6 +179,7 @@ libavutil_headers = files(
   'tea.h',
   'tx.h',
   'film_grain_params.h',
+  'video_hint.h',
 )
 
 libavutil_optional_sources = {
@@ -190,7 +194,7 @@ libavutil_optional_sources = {
   'vaapi' : files('hwcontext_vaapi.c'),
   'vdpau' : files('hwcontext_vdpau.c'),
   'videotoolbox' : files('hwcontext_videotoolbox.c'),
-  'vulkan' : files('hwcontext_vulkan.c','hwcontext_stub.c'),
+  'vulkan' : files('hwcontext_vulkan.c','vulkan.c','hwcontext_stub.c'),
 }
 
 libavutil_x86asm_optional_sources = {

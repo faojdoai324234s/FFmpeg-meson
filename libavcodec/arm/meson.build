@@ -4,7 +4,6 @@ libavcodec_arm_optional_sources = {
   'audiodsp' : files('audiodsp_init_arm.c'),
   'blockdsp' : files('blockdsp_init_arm.c'),
   'dca_decoder' : files('synth_filter_init_arm.c'),
-  'fft' : files('fft_init_arm.c'),
   'flac_decoder' : files('flacdsp_init_arm.c','flacdsp_arm.S'),
   'fmtconvert' : files('fmtconvert_init_arm.c'),
   'g722dsp' : files('g722dsp_init_arm.c'),
@@ -23,7 +22,6 @@ libavcodec_arm_optional_sources = {
   'mpegvideoenc' : files('mpegvideoencdsp_init_arm.c'),
   'neon_clobber_test' : files('neontest.c'),
   'pixblockdsp' : files('pixblockdsp_init_arm.c'),
-  'rdft' : files('rdft_init_arm.c'),
   'rv34dsp' : files('rv34dsp_init_arm.c'),
   'rv40_decoder' : files('rv40dsp_init_arm.c'),
   'sbc_encoder' : files('sbcdsp_init_arm.c'),
@@ -72,7 +70,6 @@ libavcodec_arm_neon_optional_sources = {
   'audiodsp' : files('audiodsp_init_neon.c','audiodsp_neon.S','int_neon.S'),
   'blockdsp' : files('blockdsp_init_neon.c','blockdsp_neon.S'),
   'dca_decoder' : files('synth_filter_neon.S'),
-  'fft' : files('fft_neon.S'),
   'fmtconvert' : files('fmtconvert_neon.S'),
   'g722dsp' : files('g722dsp_neon.S'),
   'h264chroma' : files('h264cmc_neon.S'),
@@ -83,10 +80,8 @@ libavcodec_arm_neon_optional_sources = {
   'hpeldsp' : files('hpeldsp_init_neon.c','hpeldsp_neon.S'),
   'idctdsp' : files('idctdsp_init_neon.c','idctdsp_neon.S','simple_idct_neon.S'),
   'llauddsp' : files('lossless_audiodsp_neon.S'),
-  'mdct' : files('mdct_neon.S'),
   'mpegvideo' : files('mpegvideo_neon.S'),
   'pixblockdsp' : files('pixblockdsp_neon.S'),
-  'rdft' : files('rdft_neon.S'),
   'rv30_decoder' : files('rv34dsp_neon.S'),
   'rv40_decoder' : files('rv34dsp_neon.S','rv40dsp_neon.S'),
   'sbc_encoder' : files('sbcdsp_neon.S'),
@@ -100,9 +95,7 @@ libavcodec_arm_neon_optional_sources = {
 
 libavcodec_arm_vfp_optional_sources = {
   'dca_decoder' : files('synth_filter_vfp.S'),
-  'fft' : files('fft_vfp.S'),
   'fmtconvert' : files('fmtconvert_vfp.S'),
-  'mdct' : files('mdct_vfp.S'),
 }
 
 libavcodec_arm_mmx_optional_sources = {

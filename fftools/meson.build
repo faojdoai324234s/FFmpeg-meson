@@ -6,7 +6,7 @@ fftools_sources = files(
 )
 
 fftools_optional_sources = {
-  # MANUAL 'ffmpeg ' : files('ffmpeg_demux.c','ffmpeg_filter.c','ffmpeg_hw.c','ffmpeg_mux.c','ffmpeg_mux_init.c','ffmpeg_opt.c','objpool.c','sync_queue.c','thread_queue.c'),
+  # MANUAL 'ffmpeg ' : files('ffmpeg_dec.c','ffmpeg_demux.c','ffmpeg_enc.c','ffmpeg_filter.c','ffmpeg_hw.c','ffmpeg_mux.c','ffmpeg_mux_init.c','ffmpeg_opt.c','objpool.c','sync_queue.c','thread_queue.c'),
 }
 
 fftools_x86asm_optional_sources = {
@@ -42,7 +42,9 @@ fftools_optional_tests = {
 #### --- END GENERATED --- ####
 
 ffmpeg_sources = files(
+  'ffmpeg_dec.c',
   'ffmpeg_demux.c',
+  'ffmpeg_enc.c',
   'ffmpeg_filter.c',
   'ffmpeg_hw.c',
   'ffmpeg_mux.c',

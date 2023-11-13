@@ -19,10 +19,10 @@
 project('FFmpeg', 'c',
   meson_version: '>= 0.60',
   license: 'LGPL2.1+',
-  # C11 is needed for Metal support
+  # C11 is needed for Metal support
   # Static libraries by default following upstream
   default_options: [ 'buildtype=debugoptimized', 'c_std=c11', 'cpp_std=c++11', 'default_library=static'],
-  version: '6.0.1',
+  version: '6.1',
 )
 
 # HOWTO:
@@ -212,6 +212,8 @@ arch_ext_list_arm = [
   'armv6',
   'armv6t2',
   'armv8',
+  'dotprod',
+  'i8mm',
   'neon',
   'vfp',
   'vfpv3',
@@ -2536,6 +2538,8 @@ elif conf.get('aarch64') == 1
     ['prfm   pldl1strm, [x0]', 'armv8'],
     ['ext   v0.8B, v0.8B, v1.8B, #1', 'neon'],
     ['fmadd d0,    d0,    d1,    d2', 'vfp'],
+    ['udot v0.4s, v0.16b, v0.16b', 'dotprod'],
+    ['usdot v0.4s, v0.16b, v0.16b', 'i8mm'],
   ]
 elif conf.get('arm') == 1
   if cc.has_argument('-mfp16-format=ieee')
@@ -2774,7 +2778,7 @@ extern_things = [
   ['FFCodec', 'decoder', 'libavcodec/allcodecs.c', 'decoder_list'],
   ['AVCodecParser', 'parser', 'libavcodec/parsers.c', 'parser_list'],
   ['FFBitStreamFilter', 'bsf', 'libavcodec/bitstream_filters.c', 'bsf_list'],
-  ['AVHWAccel', 'hwaccel', 'libavcodec/hwaccels.h', 'hwaccel_list'],
+  ['FFHWAccel', 'hwaccel', 'libavcodec/hwaccels.h', 'hwaccel_list'],
   ['URLProtocol', 'protocol', 'libavformat/protocols.c', 'protocol_list'],
   ['FFOutputFormat', 'muxer', 'libavdevice/alldevices.c', 'outdev_list', 'outdev'],
   ['AVInputFormat', 'demuxer', 'libavdevice/alldevices.c', 'indev_list', 'indev'],
@@ -2805,6 +2809,9 @@ foreach extern_thing : extern_things
   thing_allowed = get_option('@0@s'.format(thing_suffix)).allowed()
 
   foreach elem : list
+    if elem == ''
+      message('@0@s @1@'.format(thing_suffix, list))
+    endif
     opt = get_option(elem)
     conf.set(elem, (opt.enabled() or (opt.allowed() and thing_allowed)).to_int())
   endforeach
@@ -3488,6 +3495,8 @@ if conf.get('aarch64') == 1
   summary({
     'NEON': conf.get('neon').is_odd(),
     'VFP': conf.get('vfp').is_odd(),
+    'DOTPROD': conf.get('dotprod').is_odd(),
+    'I8MM': conf.get('i8mm').is_odd(),
   }, section: 'Arm64', bool_yn: true)
 endif
 if conf.get('arm') == 1

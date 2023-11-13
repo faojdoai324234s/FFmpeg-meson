@@ -27,12 +27,16 @@ def list_components(infile, full):
     for line in infile:
         if not full:
             matches = re.match(
-                r'^extern\s+(?:const\s+)?AVFilter\s*ff_[^_]*_(.*);', line.strip())
+                r'^extern\s+(?:const\s+)?AVFilter\s*ff_([^_]+)_(.*);', line.strip())
         else:
             matches = re.match(r'extern\s+(?:const\s+)?AVFilter\s*ff_(.*_.*);', line.strip())
-        if (matches):
-            if not args.full:
-                things.append(('%s_filter' % matches.group(1).strip()))
+        if matches:
+            if not full:
+                if re.match(r'[av](?:src|sink)', matches.group(1)) \
+                    and matches.group(2).endswith('buffer'):
+                    things.append(f'{matches.group(1).strip()}_{matches.group(2).strip()}_filter')
+                else:
+                    things.append(('%s_filter' % matches.group(2).strip()))
             else:
                 things.append(matches.group(1).strip())
 

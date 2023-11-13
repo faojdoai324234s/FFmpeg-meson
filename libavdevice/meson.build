@@ -81,6 +81,7 @@ libavdevice_mmx_optional_sources = {
 
 libavdevice_shlib_optional_sources = {
   'decklink_indev' : files('reverse.c'),
+  'decklink_outdev' : files('ccfifo.c'),
 }
 
 libavdevice_slib_optional_sources = {
