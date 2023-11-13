@@ -2303,8 +2303,14 @@ x86asm_checks = []
 
 asm_inline_checks = [
   ['"1:\\n"', 'inline_asm_labels'],
-  ['"Label:\\n"', 'inline_asm_nonlocal_labels']
 ]
+
+# Work around https://github.com/llvm/llvm-project/issues/64127
+if cc.get_id() != 'clang' or host_machine.system() != 'windows'
+  asm_inline_checks += [
+    ['"Label:\\n"', 'inline_asm_nonlocal_labels']
+  ]
+endif
 
 extern_prefix = cc.symbols_have_underscore_prefix() ? '_' : ''
 
