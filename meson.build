@@ -581,7 +581,8 @@ have_list = (arch_ext_list + arch_ext_list_external + arch_ext_list_inline + arc
   'pod2man',
   'texi2html',
   'xmllint',
-  'zlib_gzip'
+  'zlib_gzip',
+  'max_align_t' # MANUAL
 ])
 
 arch_features = [
@@ -793,6 +794,8 @@ if not cc.has_function('localtime_r', prefix: '#include <time.h>', args: project
 endif
 
 conf.set10('float16', cc.has_type('_Float16', args: project_c_args))
+
+conf.set10('max_align_t', cc.has_type('max_align_t', args: project_c_args))
 
 if libc_type != ''
   conf.set('libc_@0@'.format(libc_type), 1)
