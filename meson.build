@@ -1025,7 +1025,7 @@ check_components = [
   ['mediandk', ['stdint.h', 'media/NdkImage.h'], ['AImage_delete'], ['mediandk']],
   ['mmal', ['interface/mmal/mmal.h'], ['mmal_port_connect'], ['mmal_core', 'mmal_util', 'mmal_vc_client', 'bcm_host']],
   ['nanosleep', ['time.h'], ['nanosleep'], ['rt']],
-  ['ole32', ['windows.h'], ['CoTaskMemFree'], ['ole32']],
+  ['ole32', ['windows.h', 'objbase.h'], ['CoTaskMemFree'], ['ole32']],
   ['omx', ['OMX_Core.h'], [], []],
   ['openal', ['AL/al.h'], ['alGetError'], ['openal']],
   ['openal', ['AL/al.h'], ['alGetError'], ['OpenAL32']],
