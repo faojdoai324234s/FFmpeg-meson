@@ -120,7 +120,7 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'asm'
-            elif re.match('SLIBOBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match('STLIBOBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'slib'
@@ -128,7 +128,7 @@ def make_to_meson(path):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'shlib'
-            elif re.match('SLIBOBJS.*=.*', l):
+            elif re.match('STLIBOBJS.*=.*', l):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'slib'

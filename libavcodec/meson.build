@@ -1145,6 +1145,18 @@ libavcodec_shlib_optional_sources = {
 }
 
 libavcodec_slib_optional_sources = {
+  'avformat' : files('to_upper4.c'),
+  'flv_muxer' : files('mpeg4audio_sample_rates.c'),
+  'hls_demuxer' : files('ac3_channel_layout_tab.c'),
+  'iso_media' : files('mpegaudiotabs.c'),
+  'matroska_demuxer' : files('mpeg4audio_sample_rates.c'),
+  'mov_demuxer' : files('ac3_channel_layout_tab.c'),
+  'mp3_muxer' : files('mpegaudiotabs.c'),
+  'mxf_muxer' : files('golomb.c'),
+  'nut_muxer' : files('mpegaudiotabs.c'),
+  'rtpdec' : files('jpegtables.c'),
+  'rtp_muxer' : files('golomb.c','jpegtables.c','mpeg4audio_sample_rates.c'),
+  'spdif_muxer' : files('dca_sample_rate_tab.c'),
 }
 
 libavcodec_tests = [
