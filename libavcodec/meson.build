@@ -223,7 +223,7 @@ libavcodec_optional_sources = {
   'av1_vaapi_encoder' : files('vaapi_encode_av1.c','av1_levels.c'),
   'av1_vaapi_hwaccel' : files('vaapi_av1.c'),
   'av1_vdpau_hwaccel' : files('vdpau_av1.c'),
-  'av1_vulkan_hwaccel' : files('vulkan_av1.c'),
+  'av1_vulkan_hwaccel' : files('vulkan_decode.c','vulkan_av1.c'),
   'avrn_decoder' : files('avrndec.c'),
   'avrp_decoder' : files('r210dec.c'),
   'avrp_encoder' : files('r210enc.c'),
