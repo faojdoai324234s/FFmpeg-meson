@@ -20,7 +20,7 @@ project('FFmpeg', 'c',
   meson_version: '>= 0.59',
   license: 'LGPL2.1+',
   default_options: [ 'buildtype=debugoptimized', 'c_std=c99', 'cpp_std=c++11'],
-  version: '5.1.3',
+  version: '5.1.4',
 )
 
 # HOWTO:
