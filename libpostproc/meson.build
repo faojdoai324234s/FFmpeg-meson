@@ -62,7 +62,7 @@ ver_conf.set('microver', microver)
 
 install_headers(libpostproc_headers, subdir: 'libpostproc')
 
-configure_file(
+libpostproc_ver = configure_file(
   input: 'libpostproc.v.in',
   output: 'libpostproc.ver',
   configuration: ver_conf,

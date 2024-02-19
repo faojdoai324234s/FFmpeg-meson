@@ -17,24 +17,34 @@
 # License along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import pathlib
+import errno
 import os
+import pathlib
 import re
 import subprocess
-import tempfile
 
 if __name__ == '__main__':
     arg_parser = argparse.ArgumentParser(
-        description='Craft the Windows exports file')
+        description='Craft the symbols exports file')
 
-    arg_parser.add_argument('vscript', metavar='VERSION_SCRIPT',
-                            type=argparse.FileType('r'), help='Version script')
     arg_parser.add_argument('--prefix', metavar='PREFIX',
                             help='Prefix for extern symbols')
-    arg_parser.add_argument('--nm', metavar='NM_PATH', type=pathlib.Path,
-                            help='If specified, runs this instead of dumpbin (MinGW)')
-    arg_parser.add_argument('--dumpbin', metavar='DUMPBIN_PATH', type=pathlib.Path,
-                            help='If specified, runs this instead of nm (MSVC)')
+    g = arg_parser.add_argument_group('Library parsing tool')
+    group = g.add_mutually_exclusive_group(required=True)
+    group.add_argument('--nm', metavar='NM_PATH', type=pathlib.Path,
+                       help='If specified, runs this instead of dumpbin (MinGW)')
+    group.add_argument('--dumpbin', metavar='DUMPBIN_PATH', type=pathlib.Path,
+                       help='If specified, runs this instead of nm (MSVC)')
+    g = arg_parser.add_argument_group('Symbol naming')
+    group = g.add_mutually_exclusive_group(required=True)
+    group.add_argument('--regex', metavar='REGEX', type=str,
+                       nargs='+',
+                       help='Regular expression for exported symbols')
+    group.add_argument('--vscript', metavar='VERSION_SCRIPT',
+                       type=argparse.FileType('r'), help='Version script')
+    arg_parser.add_argument('--os', type=str, choices=('win', 'linux', 'darwin'),
+                            default='linux', required=True,
+                            help='Target operating system for the exports file (win = MSVC module definition file, linux = version script, darwin = exported symbols list)')
     arg_parser.add_argument('libname', metavar='FILE', type=pathlib.Path,
                             help='Library to parse')
 
@@ -50,23 +60,26 @@ if __name__ == '__main__':
     started = 0
     regex = []
 
-    for line in args.vscript:
-        # We only care about global symbols
-        if re.match(r'^\s+global:', line):
-            started = 1
-            line = re.sub(r'^\s+global: *', '', line)
-        else:
-            if re.match('^\s+local:', line):
-                started = 0
+    if args.vscript:
+        for line in args.vscript:
+            # We only care about global symbols
+            if re.match(r'^\s+global:', line):
+                started = 1
+                line = re.sub(r'^\s+global: *', '', line)
+            else:
+                if re.match('^\s+local:', line):
+                    started = 0
 
-        if started == 0:
-            continue
+            if started == 0:
+                continue
 
-        line = line.replace(';', '')
+            line = line.replace(';', '')
 
-        for exp in line.split():
-            # Remove leading and trailing whitespace
-            regex.append(exp.strip())
+            for exp in line.split():
+                # Remove leading and trailing whitespace
+                regex.append(exp.strip())
+    else:
+        regex.extend(args.regex)
 
     if args.nm is not None:
         # Use eval, since NM="nm -g"
@@ -111,8 +124,19 @@ if __name__ == '__main__':
     list = []
     for exp in regex:
         for i in dump:
-            if re.match(f'^{exp}', i):
-                list.append(f'    {i}')
+            if re.match(exp, i):
+                list.append(i)
 
-    print("EXPORTS")
-    print("\n".join(sorted(set(list))))
+    if args.os == 'win':
+        print("EXPORTS")
+        print([f'    {symbol}' for symbol in sorted(set(list))], sep='\n')
+    elif args.os == 'darwin':
+        print([f'{prefix}{symbol}' for symbol in sorted(set(list))], sep='\n')
+    else:
+        print('{')
+        print('    global:')
+        print(
+            [f'        {prefix}{symbol};' for symbol in sorted(set(list))], sep='\n')
+        print('    local:')
+        print('        *;')
+        print('};')

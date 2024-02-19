@@ -87,7 +87,7 @@ ver_conf.set('microver', microver)
 
 install_headers(libswscale_headers, subdir: 'libswscale')
 
-configure_file(
+libswscale_ver = configure_file(
   input: 'libswscale.v.in',
   output: 'libswscale.ver',
   configuration: ver_conf,

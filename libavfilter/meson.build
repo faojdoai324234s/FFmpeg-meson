@@ -683,7 +683,7 @@ ver_conf.set('microver', microver)
 
 install_headers(libavfilter_headers, subdir: 'libavfilter')
 
-configure_file(
+libavfilter_ver = configure_file(
   input: 'libavfilter.v.in',
   output: 'libavfilter.ver',
   configuration: ver_conf,

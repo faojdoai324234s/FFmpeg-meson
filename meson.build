@@ -3050,6 +3050,12 @@ endif
 
 makedef_args += ['--prefix', extern_prefix]
 
+if host_machine.system() == 'windows'
+  makedef_args += ['--os', 'win']
+elif host_machine.system() in ['darwin', 'ios']
+  makedef_args += ['--os', 'darwin']
+endif
+
 final_conf = configuration_data()
 
 if meson.version().version_compare('>=1.1.0')
@@ -3286,7 +3292,13 @@ foreach built_lib : built_libs
     gen_objects += asm_gen.process(deduped_sources)
   endif
 
-  vflag = '-Wl,--version-script,@0@/lib@1@/lib@1@.ver'.format(meson.current_build_dir(), built_lib[0])
+  version_script = meson.current_build_dir() / 'lib@0@'.format(built_lib[0]) / 'lib@0@.ver'.format(built_lib[0])
+  if host_machine.system() in ['darwin', 'ios']
+    vflag = '-Wl,-exported_symbols_list,@0@'.format(version_script)
+  else
+    vflag = '-Wl,--version-script,@0@'.format(version_script)
+  endif
+
   c_args = ['-DHAVE_AV_CONFIG_H', '-DBUILDING_@0@'.format(built_lib[0])]
 
   link_args = cc.get_supported_link_arguments([vflag])
@@ -3311,7 +3323,11 @@ foreach built_lib : built_libs
 
   vs_module_def = custom_target('@0@-def'.format(built_lib[0]),
     output: '@0@.def'.format(built_lib[0]),
-    command: [makedef_args, '@0@/lib@1@/lib@1@.ver'.format(meson.current_build_dir(), built_lib[0]), static_lib],
+    command: [makedef_args, '--vscript', '@INPUT0@', '@INPUT1@'],
+    input: [
+      get_variable('lib@0@_ver'.format(built_lib[0])),
+      static_lib
+    ],
     capture: true
   )
 

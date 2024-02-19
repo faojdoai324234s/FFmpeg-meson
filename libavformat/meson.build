@@ -712,7 +712,7 @@ ver_conf.set('microver', microver)
 
 install_headers(libavformat_headers, subdir: 'libavformat')
 
-configure_file(
+libavformat_ver = configure_file(
   input: 'libavformat.v.in',
   output: 'libavformat.ver',
   configuration: ver_conf,

@@ -325,7 +325,7 @@ ver_conf.set('majorver', libavutil_majorver)
 ver_conf.set('minorver', minorver)
 ver_conf.set('microver', microver)
 
-configure_file(
+libavutil_ver = configure_file(
   input: 'libavutil.v.in',
   output: 'libavutil.ver',
   configuration: ver_conf,

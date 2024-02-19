@@ -1249,7 +1249,7 @@ ver_conf.set('microver', microver)
 
 install_headers(libavcodec_headers, subdir: 'libavcodec')
 
-configure_file(
+libavcodec_ver = configure_file(
   input: 'libavcodec.v.in',
   output: 'libavcodec.ver',
   configuration: ver_conf,

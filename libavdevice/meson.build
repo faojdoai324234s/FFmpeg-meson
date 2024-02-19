@@ -109,7 +109,7 @@ ver_conf.set('microver', microver)
 
 install_headers(libavdevice_headers, subdir: 'libavdevice')
 
-configure_file(
+libavdevice_ver = configure_file(
   input: 'libavdevice.v.in',
   output: 'libavdevice.ver',
   configuration: ver_conf,

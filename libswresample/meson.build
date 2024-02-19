@@ -78,7 +78,7 @@ ver_conf.set('microver', microver)
 
 install_headers(libswresample_headers, subdir: 'libswresample')
 
-configure_file(
+libswresample_ver = configure_file(
   input: 'libswresample.v.in',
   output: 'libswresample.ver',
   configuration: ver_conf,
