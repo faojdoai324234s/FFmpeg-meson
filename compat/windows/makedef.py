@@ -23,6 +23,23 @@ import pathlib
 import re
 import subprocess
 
+
+def output(platform, symbols):
+    if platform == 'win':
+        print("EXPORTS")
+        print(*[f'    {symbol}' for symbol in sorted(set(symbols))], sep='\n')
+    elif platform == 'darwin':
+        print(*[f'{prefix}{symbol}' for symbol in sorted(set(symbols))], sep='\n')
+    else:
+        print('{')
+        print('    global:')
+        print(
+            *[f'        {prefix}{symbol};' for symbol in sorted(set(symbols))], sep='\n')
+        print('    local:')
+        print('        *;')
+        print('};')
+
+
 if __name__ == '__main__':
     arg_parser = argparse.ArgumentParser(
         description='Craft the symbols exports file')
@@ -35,6 +52,8 @@ if __name__ == '__main__':
                        help='If specified, runs this instead of dumpbin (MinGW)')
     group.add_argument('--dumpbin', metavar='DUMPBIN_PATH', type=pathlib.Path,
                        help='If specified, runs this instead of nm (MSVC)')
+    group.add_argument(
+        '--list', action='store_true', help='If specified, consider FILE as an exported symbols list instead of a library')
     g = arg_parser.add_argument_group('Symbol naming')
     group = g.add_mutually_exclusive_group(required=True)
     group.add_argument('--regex', metavar='REGEX', type=str,
@@ -46,7 +65,7 @@ if __name__ == '__main__':
                             default='linux', required=True,
                             help='Target operating system for the exports file (win = MSVC module definition file, linux = version script, darwin = exported symbols list)')
     arg_parser.add_argument('libname', metavar='FILE', type=pathlib.Path,
-                            help='Library to parse')
+                            help='Source file to parse')
 
     args = arg_parser.parse_args()
 
@@ -81,7 +100,13 @@ if __name__ == '__main__':
     else:
         regex.extend(args.regex)
 
-    if args.nm is not None:
+    if args.list:
+        dump = libname.open('r', encoding='utf-8').readlines()
+        # Strip whitespaces
+        dump = [x.strip() for x in dump]
+        # Exclude blank lines
+        dump = [x for x in dump if len(x) > 0]
+    elif args.nm is not None:
         # Use eval, since NM="nm -g"
         # Add -j to ensure only symbol names are output (otherwise in macOS
         # a race condition can occur in the redirection)
@@ -121,22 +146,10 @@ if __name__ == '__main__':
         # Python's split excludes whitespace at the beginning
         dump = [x.split()[1] for x in dump]
 
-    list = []
+    symbols = []
     for exp in regex:
         for i in dump:
             if re.match(exp, i):
-                list.append(i)
+                symbols.append(i)
 
-    if args.os == 'win':
-        print("EXPORTS")
-        print([f'    {symbol}' for symbol in sorted(set(list))], sep='\n')
-    elif args.os == 'darwin':
-        print([f'{prefix}{symbol}' for symbol in sorted(set(list))], sep='\n')
-    else:
-        print('{')
-        print('    global:')
-        print(
-            [f'        {prefix}{symbol};' for symbol in sorted(set(list))], sep='\n')
-        print('    local:')
-        print('        *;')
-        print('};')
+    output(args.os, symbols)
