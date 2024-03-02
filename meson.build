@@ -3301,7 +3301,14 @@ foreach built_lib : built_libs
 
   c_args = ['-DHAVE_AV_CONFIG_H', '-DBUILDING_@0@'.format(built_lib[0])]
 
-  link_args = cc.get_supported_link_arguments([vflag])
+  link_args = cc.get_supported_link_arguments([
+    vflag,
+    # Fixes warnings about PIC relocation.
+    # See:
+    # https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3348#note_2308136
+    # https://github.com/google/ExoPlayer/issues/9933#issuecomment-1029775358
+    '-Wl,-Bsymbolic'
+  ])
 
   static_link_args = []
 
@@ -3456,7 +3463,15 @@ foreach pkg_info : pkg_infos
   pkg.generate(get_variable(libname),
     filebase:  libname,
     description: pkg_info[0],
-    version: get_variable(libname + '_version')
+    version: get_variable(libname + '_version'),
+    libraries_private: cc.get_supported_link_arguments([
+      # Ensure that consumers link with -Bsymbolic.
+      # Use Libs.private since this affects static-to-shared builds.
+      # See:
+      # https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3348#note_2308136
+      # https://github.com/google/ExoPlayer/issues/9933#issuecomment-1029775358
+      '-Wl,-Bsymbolic'
+    ])
   )
 endforeach
 
