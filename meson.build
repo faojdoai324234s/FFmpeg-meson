@@ -1935,8 +1935,8 @@ foreach check : all_checks
 
     foreach precondition : preconditions
       if precondition in autodetect_libs
-        opt_name = options_map.get(precondition, precondition)
-        if get_option(opt_name).allowed()
+        pre_name = options_map.get(precondition, precondition)
+        if get_option(pre_name).allowed()
           found = found and conf.get(precondition, 1) == 1
         else
           found = found and conf.get(precondition, 0) == 1
