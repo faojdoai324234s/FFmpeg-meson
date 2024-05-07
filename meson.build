@@ -3035,6 +3035,16 @@ foreach a: arch_list
 endforeach
 
 foreach have: have_list
+  if have == 'unistd_h' and conf.get(have) == 0
+    # https://github.com/madler/zlib/issues/787
+    # Workaround for the `HAVE_UNISTD_H` conflict. Both ffmpeg and zlib define
+    # the same name. While ffmpeg checks for 0/1 using #if, zlib uses #ifdef, so
+    # the 0 case would be incorrectly inferred as if unistd.h is available. As a
+    # workaround, don't define `HAVE_UNISTD_H` at all and rely on the fact that
+    # undefined will be resolved to 0. This may introduce compiler warnings, but
+    # otherwise works correctly.
+    continue
+  endif
   final_conf.set('HAVE_@0@'.format(have.to_upper()), conf.get(have.to_lower()))
 endforeach
 
