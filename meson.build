@@ -949,6 +949,7 @@ check_pkg_config = [
   ['xlib_x11', ['X11/Xlib.h'], ['XPending'], {'pkg': 'xlib'}],
   ['xlib_xext', ['X11/Xlib.h', 'X11/extensions/XShm.h'], ['XShmAttach'], {'pkg': 'xext'}],
   ['xlib_xv', ['X11/Xlib.h', 'X11/extensions/Xvlib.h'], ['XvGetPortAttribute'], {'pkg': 'xv'}],
+  ['zlib', ['zlib.h'], ['zlibVersion'], {'pkg': 'zlib'}],
 ]
 
 foreach check : check_pkg_config
@@ -1042,7 +1043,6 @@ check_components = [
   ['user32', ['windows.h', 'winuser.h'], ['GetShellWindow'], ['user32']],
   ['vfw32', ['windows.h', 'vfw.h'], ['capCreateCaptureWindow'], ['vfw3']],
   ['vaapi', ['va/va.h'], ['vaInitialize'], ['va']],
-  ['zlib', ['zlib.h'], ['zlibVersion'], ['z']],
 
   # Libraries with preconditions
   ['vaapi_drm', ['va/va.h', 'va/va_drm.h'], ['vaGetDisplayDRM'], ['va', 'va-drm'],
