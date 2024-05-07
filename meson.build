@@ -1969,6 +1969,7 @@ foreach check : all_checks
       found = false
     endif
 
+    internal_dep = false
     if found
       if check_type == 'framework'
         foreach f : frameworks
@@ -2014,7 +2015,8 @@ foreach check : all_checks
         else
           dep = dependency(pkg_name, required : req)
         endif
-        found = dep.found() and dep.type_name() != 'internal'
+        found = dep.found()
+        internal_dep = dep.type_name() == 'internal'
         extra_deps += dep
       endif
     endif
@@ -2028,14 +2030,14 @@ foreach check : all_checks
         endif
 
         if not conf.has(header.underscorify())
-          has_header = cc.has_header(header, dependencies: extra_deps)
+          has_header = internal_dep or cc.has_header(header, dependencies: extra_deps)
           conf.set10(header.underscorify().to_lower(), has_header)
           found = found and has_header
         endif
       endforeach
     endif
 
-    if found
+    if found and not internal_dep
       n_funcs_found = 0
       foreach symbol : funcs
         if check_type == 'header-func'
@@ -2055,7 +2057,7 @@ foreach check : all_checks
       endif
     endif
 
-    if found
+    if found and not internal_dep
       n_defines_found = 0
       foreach symbol : defines
         if cc.get_define(symbol, dependencies : extra_deps, prefix: prefix, args : c_args + project_c_args) != ''
@@ -2065,15 +2067,15 @@ foreach check : all_checks
       found = n_defines_found == defines.length()
     endif
 
-    if found and compiles != ''
+    if found and compiles != '' and not internal_dep
       found = cc.compiles('\n\n'.join([prefix, compiles]), dependencies : extra_deps, args : c_args + project_c_args, name: name)
     endif
 
-    if found and links != ''
+    if found and links != '' and not internal_dep
       found = cc.links('\n\n'.join([prefix, links]), dependencies : extra_deps, args : c_args + project_c_args, name: name)
     endif
 
-    if found and type != ''
+    if found and type != '' and not internal_dep
       found = cc.has_type(type, prefix : prefix, dependencies : extra_deps, args : c_args + project_c_args)
     endif
 
