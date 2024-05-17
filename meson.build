@@ -3136,7 +3136,9 @@ foreach built_lib : built_libs
   optional_tests = get_variable('lib@0@_optional_tests'.format(built_lib[0]), {})
 
   foreach comp_name, comp_sources : optional_sources
-    if conf.get(comp_name, 0) == 1
+    comp_neg = comp_name.startswith('!')
+    comp_name = comp_name.strip('!')
+    if conf.get(comp_name, 0) == (comp_neg ? 0 : 1)
       sources += comp_sources
     endif
 

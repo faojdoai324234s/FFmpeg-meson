@@ -183,6 +183,7 @@ libavutil_headers = files(
 )
 
 libavutil_optional_sources = {
+  '!vulkan' : files('hwcontext_stub.c'),
   'cuda' : files('hwcontext_cuda.c'),
   'd3d11va' : files('hwcontext_d3d11va.c'),
   'dxva2' : files('hwcontext_dxva2.c'),
@@ -194,7 +195,7 @@ libavutil_optional_sources = {
   'vaapi' : files('hwcontext_vaapi.c'),
   'vdpau' : files('hwcontext_vdpau.c'),
   'videotoolbox' : files('hwcontext_videotoolbox.c'),
-  'vulkan' : files('hwcontext_vulkan.c','vulkan.c','hwcontext_stub.c'),
+  'vulkan' : files('hwcontext_vulkan.c','vulkan.c'),
 }
 
 libavutil_x86asm_optional_sources = {
