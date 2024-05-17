@@ -87,9 +87,11 @@ def make_to_meson(path):
 
             if accumulate:
                 ofiles = l
-            elif re.match('OBJS-.*CONFIG.*\+\=.*', l):
-                label, ofiles = l.split('+=')
-                label = label.split('CONFIG_')[1].rstrip(' )')
+            elif m := re.match('OBJS-\$\((?P<neg>!?)(?:CONFIG|HAVE)_(?P<label>[^\)]+)\)\s*\+=\s*(?P<files>.+)', l):
+                label = m.group('label')
+                if m.group('neg'):
+                    label = '!' + label
+                ofiles = m.group('files')
                 source_type = 'c' # arguable ^^
             elif re.match('OBJS-.*HAVE.*\+\=.*', l):
                 label, ofiles = l.split('+=')

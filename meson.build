@@ -3291,7 +3291,9 @@ foreach built_lib : built_libs
   special_sources = {}
 
   foreach comp_name, comp_sources : optional_sources
-    if conf.get(comp_name, 0) == 1
+    comp_neg = comp_name.startswith('!')
+    comp_name = comp_name.strip('!')
+    if conf.get(comp_name, 0) == (comp_neg ? 0 : 1)
       if optional_includes.has_key(comp_name)
         special_sources += {comp_name: special_sources.get(comp_name, []) + comp_sources}
       else
