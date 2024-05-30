@@ -2980,6 +2980,8 @@ if host_machine.system() == 'windows'
   makedef_args += ['--os', 'win']
 elif host_machine.system() in ['darwin', 'ios']
   makedef_args += ['--os', 'darwin']
+else
+  makedef_args += ['--os', 'linux']
 endif
 
 final_conf = configuration_data()
