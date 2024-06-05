@@ -39,6 +39,7 @@ libavutil_sources = files(
   'hdr_dynamic_vivid_metadata.c',
   'hmac.c',
   'hwcontext.c',
+  'iamf.c',
   'imgutils.c',
   'integer.c',
   'intmath.c',
@@ -70,6 +71,7 @@ libavutil_sources = files(
   'threadmessage.c',
   'time.c',
   'timecode.c',
+  'timestamp.c',
   'tree.c',
   'twofish.c',
   'utils.c',
@@ -129,6 +131,7 @@ libavutil_headers = files(
   'hwcontext.h',
   'hwcontext_cuda.h',
   'hwcontext_d3d11va.h',
+  'hwcontext_d3d12va.h',
   'hwcontext_drm.h',
   'hwcontext_dxva2.h',
   'hwcontext_qsv.h',
@@ -138,6 +141,7 @@ libavutil_headers = files(
   'hwcontext_videotoolbox.h',
   'hwcontext_vdpau.h',
   'hwcontext_vulkan.h',
+  'iamf.h',
   'imgutils.h',
   'intfloat.h',
   'intreadwrite.h',
@@ -185,6 +189,7 @@ libavutil_headers = files(
 libavutil_optional_sources = {
   'cuda' : files('hwcontext_cuda.c'),
   'd3d11va' : files('hwcontext_d3d11va.c'),
+  'd3d12va' : files('hwcontext_d3d12va.c'),
   'dxva2' : files('hwcontext_dxva2.c'),
   'libdrm' : files('hwcontext_drm.c'),
   'macos_kperf' : files('macos_kperf.c'),
@@ -268,6 +273,7 @@ libavutil_tests = [
   ['ripemd', files('tests/ripemd.c')],
   ['sha', files('tests/sha.c')],
   ['sha512', files('tests/sha512.c')],
+  ['side_data_array', files('tests/side_data_array.c')],
   ['softfloat', files('tests/softfloat.c')],
   ['tree', files('tests/tree.c')],
   ['twofish', files('tests/twofish.c')],
@@ -288,9 +294,6 @@ libavutil_optional_tests = {
     ['cpu_init', files('tests/cpu_init.c'), {
       'extra_libs': ['threads'],  # MANUAL
     }],
-  ],
-  'pixelutils': [
-    ['pixelutils', files('tests/pixelutils.c'), {}] # MANUAL
   ],
 }
 

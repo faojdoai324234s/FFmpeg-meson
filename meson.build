@@ -22,7 +22,7 @@ project('FFmpeg', 'c',
   # C11 is needed for Metal support
   # Static libraries by default following upstream
   default_options: [ 'buildtype=debugoptimized', 'c_std=c11', 'cpp_std=c++11', 'default_library=static'],
-  version: '6.1.1',
+  version: '7.0.1',
 )
 
 # HOWTO:
@@ -104,7 +104,7 @@ if cc.get_argument_syntax() == 'msvc'
 endif
 
 project_c_args = [
-  '-D_ISOC99_SOURCE',
+  '-D_ISOC11_SOURCE',
   '-D_GNU_SOURCE',
   '-D_LARGEFILE_SOURCE',
   '-Wno-parentheses',
@@ -125,6 +125,20 @@ project_c_args = [
 # https://github.com/mesonbuild/meson/issues/1889#issuecomment-1275991958
 if meson.is_subproject() and meson.version().version_compare('< 0.63')
   project_c_args += ['-std=c11']
+endif
+
+if not cc.compiles('''#include <assert.h>
+#include <stddef.h>
+struct Foo {
+    int a;
+    void *ptr;
+} obj;
+static_assert(offsetof(struct Foo, a) == 0,
+              "First element of struct does not have offset 0");
+_Static_assert(offsetof(struct Foo, ptr) >= offsetof(struct Foo, a) + sizeof(obj.a),
+               "elements not properly ordered in struct");''',
+              name: 'Supports C11 static assertions')
+  error('Compiler lacks support for C11 static assertions')
 endif
 
 project_c_args = cc.get_supported_arguments(project_c_args)
@@ -337,6 +351,7 @@ headers_list = [
   'opencv2_core_core_c_h',
   'OpenGL_gl3_h',
   'poll_h',
+  'pthread_np_h',
   'sys_param_h',
   'sys_resource_h',
   'sys_select_h',
@@ -439,6 +454,8 @@ system_funcs = [
   'posix_memalign',
   'prctl',
   'pthread_cancel',
+  'pthread_set_name_np',
+  'pthread_setname_np',
   'sched_getaffinity',
   'SecItemImport',
   'SetConsoleTextAttribute',
@@ -577,6 +594,7 @@ have_list = (arch_ext_list + arch_ext_list_external + arch_ext_list_inline + arc
   'opencl_dxva2',
   'opencl_vaapi_beignet',
   'opencl_vaapi_intel_media',
+  'opencl_videotoolbox',
   'perl',
   'pod2man',
   'texi2html',
@@ -652,6 +670,8 @@ library_gpl_list = [
   'frei0r',
   'libcdio',
   'libdavs2',
+  'libdvdnav',
+  'libdvdread',
   'librubberband',
   'libvidstab',
   'libx264',
@@ -808,6 +828,9 @@ conf.set10('pic', get_option('b_staticpic'))
 conf.set10('winrt', cc.links(cpp_cond.format('windows.h', '!WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)')))
 
 d3d11va_extra_deps = []
+d3d12va_extra_deps = []
+vaapi_win32_extra_deps = []
+mediafoundation_extra_deps = []
 
 conf.set10('uwp', cc.compiles('''#ifdef WINAPI_FAMILY
 #include <winapifamily.h>
@@ -820,9 +843,22 @@ conf.set10('uwp', cc.compiles('''#ifdef WINAPI_FAMILY
 #error no family set
 #endif''', name: 'is UWP'))
 if conf.get('uwp') == 1
+  # In UWP mode, we can't use LoadLibrary+GetProcAddress to conditionally
+  # try to load these APIs at runtime, like we do in regular desktop mode -
+  # therefore, we need to link directly against these APIs.
   d3d11va_extra_deps += [
     cc.find_library('dxgi'),
     cc.find_library('d3d11')
+  ]
+  d3d12va_extra_deps += [
+    cc.find_library('dxgi'),
+    cc.find_library('d3d12')
+  ]
+  vaapi_win32_extra_deps += [
+    cc.find_library('dxgi'),
+  ]
+  mediafoundation_extra_deps += [
+    cc.find_library('mfplat'),
   ]
 endif
 
@@ -872,6 +908,8 @@ check_pkg_config = [
   ['libdavs2', ['davs2.h'], ['davs2_decoder_open'], {'pkg': 'davs2', 'version': '>= 1.6.0'}],
   ['libdc1394', ['dc1394/dc1394.h'], ['dc1394_new'], {'pkg': 'libdc1394-2'}],
   ['libdrm', ['xf86drm.h'], ['drmGetVersion'], {}],
+  ['libdvdnav', ['dvdnav/dvdnav.h'], ['dvdnav_open2'], {'pkg': 'dvdnav', ' version': '>= 6.1.1'}],
+  ['libdvdread', ['dvdread/dvd_reader.h'], ['DVDOpen2'], {'pkg': 'dvdread', ' version': '>= 6.1.2'}],
   ['libfdk_aac', ['fdk-aac/aacenc_lib.h'], ['aacEncOpen'], {'pkg': 'fdk-aac'}],
   ['libfontconfig', ['fontconfig/fontconfig.h'], ['FcInit'], {'pkg': 'fontconfig'}],
   ['libfreetype', ['ft2build.h', 'FT_FREETYPE_H'], ['FT_Init_FreeType'], {'pkg': 'freetype2'}],
@@ -885,7 +923,7 @@ check_pkg_config = [
   ['libmodplug', ['libmodplug/modplug.h'], ['ModPlug_Load'], {}],
   ['libopencv', ['opencv2/core/core_c.h'], ['cvCreateImageHeader'], {'pkg': 'opencv'}],
   ['libopencv', ['opencv/cxcore.h'], ['cvCreateImageHeader'], {'pkg': 'opencv'}],
-  ['libopenh264', ['wels/codec_api.h'], ['WelsGetCodecVersion'], {'pkg': 'openh264'}],
+  ['libopenh264', ['wels/codec_api.h'], ['WelsGetCodecVersion'], {'pkg': 'openh264', 'version': '>= 1.3.0'}],
   ['libdav1d', ['dav1d/dav1d.h'], ['dav1d_version'], {'pkg': 'dav1d', 'version': '>= 0.4.0'}],
   ['libopenjpeg', ['openjpeg.h'], ['opj_version'], {'pkg': 'libopenjp2',
                                                     'version': '>= 2.1.0'}],
@@ -896,6 +934,8 @@ check_pkg_config = [
   ['libopus', ['opus_multistream.h'], ['opus_multistream_decoder_create', 'opus_multistream_surround_encoder_create'], {'pkg': 'opus'}],
   ['libplacebo', ['libplacebo/vulkan.h'], ['pl_vulkan_create'], {'pkg': 'libplacebo', 'version': '>= 4.192.0'}],
   ['libpulse', ['pulse/pulseaudio.h'], ['pa_context_new'], {}],
+  ['libqrencode', ['qrencode.h'], ['QRcode_encodeString'], {}],
+  ['libquirc', ['quirc.h'], ['quirc_decode'], {}],
   ['librabbitmq', ['amqp.h'], ['amqp_new_connection'], {'pkg': 'librabbitmq', 'version': '>= 0.7.1'}],
   ['librav1e', ['rav1e.h'], ['rav1e_context_new'], {'pkg': 'rav1e', 'version': '>= 0.5.0'}],
   ['librist', ['librist/librist.h'], ['rist_receiver_create'], {'pkg': 'rist', 'version': '>= 0.2.7'}],
@@ -910,13 +950,16 @@ check_pkg_config = [
   ['libsrt', ['srt/srt.h'], ['srt_socket'], {'pkg': 'srt', 'version': '>= 1.2.0'}],
   ['libsvtav1', ['EbSvtAv1Enc.h'], ['svt_av1_enc_init_handle'], {'pkg': 'SvtAv1Enc', 'version': '>= 0.9.0'}],
   ['libtesseract', ['tesseract/capi.h'], ['TessBaseAPICreate'], {'pkg': 'tesseract'}],
+  # FIXME: libtorch needs a C++ check
+  # with the following libraries:  -ltorch -lc10 -ltorch_cpu -lpthread
+  # ['libtorch', ['torch/torch.h'], ['torch::Tensor'], {}],
   ['libtls', ['tls.h'], ['tls_configure'], {}],
   ['libv4l2', ['libv4l2.h'], ['v4l2_ioctl'], {}],
   ['libvidstab', ['vid.stab/libvidstab.h'], ['vsMotionDetectInit'], {'pkg': 'vidstab', 'version': '>= 0.98'}],
   ['libvmaf', ['libvmaf.h'], ['compute_vmaf'], {'version': '>= 2.0.0'}],
   ['libvorbis', ['vorbis/codec.h'], ['vorbis_info_init'], {'pkg': 'vorbis'}],
   ['libvorbisenc', ['vorbis/vorbisenc.h'], ['vorbis_encode_init'], {'pkg': 'vorbisenc'}],
-  ['libvpl', ['mfxvideo.h', 'mfxdispatcher.h'], ['MFXLoad'], {'pkg': 'vpl', 'version': '>= 2.6'}],
+  ['libvpl', ['mfxvideo.h', 'mfxdispatcher.h'], ['MFXLoad'], {'pkg': 'vpl', 'version': '>= 2.6', 'c_args': '-DMFX_DEPRECATED_OFF'}],
   ['libvpx', ['vpx/vpx_decoder.h', 'vpx/vpx_encoder.h'], [], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
   ['libvpx_vp8_decoder', ['vpx/vpx_decoder.h', 'vpx/vp8dx.h'], ['vpx_codec_vp8_dx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
   ['libvpx_vp8_encoder', ['vpx/vpx_encoder.h', 'vpx/vp8cx.h'], ['vpx_codec_vp8_cx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
@@ -945,7 +988,7 @@ check_pkg_config = [
   ['sdl2', ['SDL_events.h'], ['SDL_PollEvent'], {'version': ['>= 2.0.1', '< 3.0.0']}],
   ['sndio', ['sndio.h'], ['sio_open'], {'pkg': 'sndio'}],
   ['vapoursynth', ['VSScript.h'], ['vsscript_init'], {'pkg': 'vapoursynth-script', 'version': '>= 42'}],
-  ['vulkan', ['vulkan/vulkan.h'], ['vkCreateInstance'], {'pkg': 'vulkan', 'version': '>= 1.2.189'}],
+  ['vulkan', ['vulkan/vulkan.h'], ['vkCreateInstance'], {'pkg': 'vulkan', 'version': '>= 1.3.277'}],
   ['xlib_x11', ['X11/Xlib.h'], ['XPending'], {'pkg': 'xlib'}],
   ['xlib_xext', ['X11/Xlib.h', 'X11/extensions/XShm.h'], ['XShmAttach'], {'pkg': 'xext'}],
   ['xlib_xv', ['X11/Xlib.h', 'X11/extensions/Xvlib.h'], ['XvGetPortAttribute'], {'pkg': 'xv'}],
@@ -955,6 +998,15 @@ check_pkg_config = [
 foreach check : check_pkg_config
   all_checks += [['pkg-config', check]]
 endforeach
+
+if get_option('opencl').allowed() and get_option('videotoolbox').allowed()
+  dep = dependency('appleframeworks', modules: ['VideoToolbox', 'OpenCL'], required: false)
+  conf.set10(opencl_videotoolbox, false)
+  if cc.has_function('clCreateImageFromIOSurfaceWithPropertiesAPPLE', prefix: '#include <OpenCL/cl_gl_ext.h>', dependencies: dep)
+    conf.set10(opencl_videotoolbox, true)
+    common_deps += [dep]
+  endif
+endif
 
 conf.set10('vdpau', cc.has_header('vdpau/vdpau.h') and
   cc.get_define('VDP_DECODER_PROFILE_MPEG4_PART2_ASP', prefix: '#include <vdpau/vdpau.h>') != '')
@@ -975,8 +1027,6 @@ check_components = [
   ['clock_gettime', ['time.h'], ['clock_gettime'], []],
   ['clock_gettime', ['time.h'], ['clock_gettime'], ['rt']],
   ['cuda_sdk', ['cuda.h'], ['cuCtxCreate'], ['cuda']],
-  # FFmpeg deprecated CrystalHD in 6.0
-  # ['crystalhd', ['stdint.h', 'libcrystalhd/libcrystalhd_if.h'], ['DtsCrystalHDVersion'], ['crystalhd']],
   ['frei0r', ['frei0r.h'], [], []],
   ['iconv', ['iconv.h'], ['iconv'], ['iconv']],
   ['libgme', ['gme/gme.h'], ['gme_new_emu'], ['gme', 'stdc++']],
@@ -1161,6 +1211,17 @@ if get_option('securetransport').allowed()
   ]
 endif
 
+if get_option('videotoolbox').allowed()
+  check_funcs += [
+    ['VTPixelTransferSessionCreate', {'c_args': ['-Wl,-framework,CoreFoundation', '-Wl,-framework,Security']}],
+    ['SecItemImport', {'c_args': ['-Wl,-framework,CoreFoundation', '-Wl,-framework,Security']}],
+  ]
+
+  check_components += [
+    ['videotoolbox', ['VideoToolbox/VideoToolbox.h', 'VideoToolbox/VTCompressionSession.h'], ['VTPixelTransferSessionCreate', 'VTPixelRotationSessionCreate', 'VTCompressionSessionPrepareToEncodeFrames'], [], {'frameworks': ['VideoToolbox']}],
+  ]
+endif
+
 check_types = [
   ['DXVA_PicParams_AV1', ['windows.h', 'dxva.h'], {'c_args': ['-DWINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP', '-D_CRT_BUILD_DESKTOP_APP=0']}],
   ['DXVA_PicParams_HEVC', ['windows.h', 'dxva.h'], {'c_args': ['-DWINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP', '-D_CRT_BUILD_DESKTOP_APP=0']}],
@@ -1170,6 +1231,8 @@ check_types = [
   ['IDXGIOutput5', ['windows.h', 'dxgi1_5.h']],
   ['ID3D11VideoDecoder', ['windows.h', 'd3d11.h']],
   ['ID3D11VideoContext', ['windows.h', 'd3d11.h']],
+  ['ID3D12Device', ['windows.h', 'd3d12.h']],
+  ['ID3D12VideoDecoder', ['windows.h', 'd3d12video.h']],
   ['DPI_AWARENESS_CONTEXT', ['windows.h'], {'c_args': ['-D_WIN32_WINNT=0x0A00']}],
   ['DXVA2_ConfigPictureDecode', ['d3d9.h', 'dxva2api.h'], {'c_args': ['-D_WIN32_WINNT=0x0602']}],
   ['VAPictureParameterBufferHEVC', ['va/va.h', 'va/va_dec_hevc.h']],
@@ -1259,6 +1322,7 @@ check_headers = [
   ['mftransform.h'],
   ['msa.h'],
   ['net/udplite.h'],
+  ['pthread_np.h'],
   ['sys/param.h'],
   ['sys/resource.h'],
   ['sys/select.h'],
@@ -1313,7 +1377,6 @@ external_library_list = library_gpl_list + library_nonfree_list + library_versio
   'libcodec2',
   'libdav1d',
   'libdc1394',
-  'libdrm',
   'libflite',
   'libfontconfig',
   'libfreetype',
@@ -1338,6 +1401,8 @@ external_library_list = library_gpl_list + library_nonfree_list + library_versio
   'libopus',
   'libplacebo',
   'libpulse',
+  'libqrencode',
+  'libquirc',
   'librabbitmq',
   'librav1e',
   'librist',
@@ -1355,6 +1420,8 @@ external_library_list = library_gpl_list + library_nonfree_list + library_versio
   'libtensorflow',
   'libtesseract',
   'libtheora',
+  # FIXME enable when C++ checks are implemented
+  # 'libtorch',
   'libtwolame',
   'libuavs3d',
   'libv4l2',
@@ -1362,6 +1429,8 @@ external_library_list = library_gpl_list + library_nonfree_list + library_versio
   'libvorbis',
   'libvpx',
   'libwebp',
+  'libxevd',
+  'libxeve',
   'libxml2',
   'libzimg',
   'libzmq',
@@ -1378,13 +1447,14 @@ external_library_list = library_gpl_list + library_nonfree_list + library_versio
 hwaccel_autodetect_library_list = [
   'amf',
   'audiotoolbox',
-  'crystalhd',
   'cuda',
   'cuda_llvm',
   'cuvid',
   'd3d11va',
+  'd3d12va',
   'dxva2',
   'ffnvcodec',
+  'libdrm',
   'nvdec',
   'nvenc',
   'vaapi',
@@ -1470,6 +1540,7 @@ config_extra = [
   'cbs_h265',
   'cbs_jpeg',
   'cbs_mpeg2',
+  'cbs_vp8',
   'cbs_vp9',
   'deflate_wrapper',
   'dirac_parse',
@@ -1498,6 +1569,8 @@ config_extra = [
   'huffman',
   'huffyuvdsp',
   'huffyuvencdsp',
+  'iamfdec',
+  'iamfenc',
   'idctdsp',
   'iirfilter',
   'inflate_wrapper',
@@ -1507,6 +1580,7 @@ config_extra = [
   'jpegtables',
   'lgplv3',
   'libx262',
+  'libx264_hdr10',
   'llauddsp',
   'llviddsp',
   'llvidencdsp',
@@ -1810,7 +1884,7 @@ if host_machine.system() == 'windows'
   project_c_args += cc.get_supported_arguments('-DWIN32_LEAN_AND_MEAN', '-wd4005', '-Wp,-w')
 endif
 
-if ['linux', 'openbsd', 'android'].contains(host_machine.system())
+if ['linux', 'openbsd', 'android', 'freebsd', 'netbsd'].contains(host_machine.system())
   conf.set('section_data_rel_ro', 1)
 endif
 
@@ -2179,6 +2253,14 @@ if conf.get('pthreads') == 0 and conf.get('w32threads') == 0 and conf.get('os2th
       }
     ''', name: 'has pthreads semaphores available', dependencies: thread_dep))
     conf.set10('pthread_cancel', cc.has_function('pthread_cancel', dependencies: thread_dep))
+    if conf.get('pthread_np_h') == 1
+      thread_prefix = '''
+        #include <pthread.h>
+        #include <pthread_np.h>
+      '''
+      conf.set10('pthread_set_name_np', cc.has_function('pthread_set_name_np', prefix: thread_prefix, dependencies: thread_dep))
+      conf.set10('pthread_setname_np', cc.has_function('pthread_setname_np', prefix: thread_prefix, dependencies: thread_dep))
+    endif
   endif
 endif
 
@@ -2269,6 +2351,8 @@ if conf.get('libx264') == 1
       conf.set('libx264', 0)
     endif
   endif
+  conf.set10('libx264_hdr10', cc.links(cpp_cond.format('x264.h', 'X264_BUILD >= 163'), name: 'libx264 version'))
+  conf.set10('libx262', cc.links(cpp_cond.format('x264.h', 'X264_MPEG2'), name: 'supports MPEG2 inside x264'))
 endif
 
 if conf.get('libmfx') == 1 and conf.get('libvpl') == 1
@@ -2307,7 +2391,10 @@ asm_inline_checks = [
   ['"1:\\n"', 'inline_asm_labels'],
 ]
 
-# Work around https://github.com/llvm/llvm-project/issues/64127
+# Clang's LTO fails on Windows, when there are references outside
+# of inline assembly to nonlocal labels defined within inline assembly,
+# see https://github.com/llvm/llvm-project/issues/76046.
+# Original bug report: https://github.com/llvm/llvm-project/issues/64127
 if cc.get_id() != 'clang' or host_machine.system() != 'windows'
   asm_inline_checks += [
     ['"Label:\\n"', 'inline_asm_nonlocal_labels']
@@ -2333,7 +2420,10 @@ asm_args = []
 
 if conf.get('pic') == 1
   project_c_args += ['-DPIC']
-  asm_args += ['-DPIC']
+  if conf.get('x86') == 1 and conf.get('x86_64') == 0
+    # https://github.com/FFmpeg/FFmpeg/commit/afa471d0efed1df5dca6eeeb2fcdd211ae4cad4e
+    warning('FFmpeg 7.0 has dropped PIC setup for x86 targets. If your build is broken, please report an issue at https://gitlab.freedesktop.org/gstreamer/meson-ports/ffmpeg/-/issues')
+  endif
 endif
 
 if conf.get('x86') == 1
@@ -2397,7 +2487,6 @@ if conf.get('x86') == 1
           add_project_link_arguments('-Wl,-z,notext', language: 'c')
       endif
       x86asm_checks += [
-        ['CPU amdnop', 'cpunop'],
         ['vmovdqa32 [eax]{k1}{z}, zmm0', 'avx512_external'],
         ['vpdpwssds zmm31{k1}{z}, zmm29, zmm28', 'avx512icl_external'],
         ['vextracti128 xmm0, ymm0, 0', 'avx2_external'],
@@ -2530,7 +2619,7 @@ elif conf.get('arm') == 1
   ]
 
   asm_as_checks += [
-    ['.arch armv7-a', 'as_arch_directive'],
+    ['.arch armv8-a', 'as_arch_directive'],
     ['ra .dn d0.i16', 'as_dn_directive'],
     ['.fpu neon', 'as_fpu_directive']
   ]
@@ -2682,6 +2771,53 @@ foreach check : asm_as_checks
   endif
 endforeach
 
+if conf.get('as_arch_directive', 0) == 1
+  # Check for higher .arch levels. We only need armv8.2-a in order to
+  # enable the extensions we want below - we primarily want to control
+  # them via .arch_extension. However:
+  #
+  # Clang before version 17 (Xcode versions up to and including 15.0)
+  # didn't support controlling the dotprod/i8mm extensions via
+  # .arch_extension; thus try to enable them via the .arch level as well.
+  foreach level : ['armv8.2-a', 'armv8.4-a', 'armv8.6-a']
+    f = configure_file(
+      command: [python3, '-c', 'import sys; print(sys.argv[1])', '.arch @0@'.format(level)],
+      input: 'configure',
+      output: '@0@.S'.format(check[1]),
+      capture: true,
+    )
+    conf.set10('tested_arch_level', cc.compiles(
+      f,
+      args: ['-x', 'assembler'],
+      name: 'assembler supports @0@'.format(level)
+    ))
+    if conf.get10('tested_arch_level') == 1
+      as_arch_level = level
+    endif
+  endforeach
+  # Clang before version 17 (Xcode versions up to and including 15.0)
+  # also had a bug (https://github.com/llvm/llvm-project/issues/32220)
+  # causing a plain ".arch <level>" to not have any effect unless it
+  # had an extra "+<feature>" included - but it was activated on the next
+  # ".arch_extension" directive. Check if we can include "+crc" as dummy
+  # feature to make the .arch directive behave as expected and take
+  # effect right away.
+  f = configure_file(
+    command: [python3, '-c', 'import sys; print(sys.argv[1])', '.arch @0@+crc'.format(level)],
+    input: 'configure',
+    output: '@0@.S'.format(check[1]),
+    capture: true,
+  )
+  conf.set10('tested_arch_level', cc.compiles(
+    f,
+    args: ['-x', 'assembler'],
+    name: 'assembler supports @0@ with the CRC extension'.format(level)
+  ))
+  if conf.get10('tested_arch_level') == 1
+    as_arch_level = level
+  endif
+endif
+
 if conf.get('x86') == 1
   conf.set10('ebx_available', conf.get('ebx_available_1') == 1 and conf.get('ebx_available_2') == 1)
   message('EBX available: @0@'.format(conf.get('ebx_available')))
@@ -2708,7 +2844,7 @@ endif
 
 extern_things = [
   ['FFOutputFormat', 'muxer', 'libavformat/allformats.c', 'muxer_list'],
-  ['AVInputFormat', 'demuxer', 'libavformat/allformats.c', 'demuxer_list'],
+  ['FFInputFormat', 'demuxer', 'libavformat/allformats.c', 'demuxer_list'],
   ['FFCodec', 'encoder', 'libavcodec/allcodecs.c', 'encoder_list'],
   ['FFCodec', 'decoder', 'libavcodec/allcodecs.c', 'decoder_list'],
   ['AVCodecParser', 'parser', 'libavcodec/parsers.c', 'parser_list'],
@@ -2716,7 +2852,7 @@ extern_things = [
   ['FFHWAccel', 'hwaccel', 'libavcodec/hwaccels.h', 'hwaccel_list'],
   ['URLProtocol', 'protocol', 'libavformat/protocols.c', 'protocol_list'],
   ['FFOutputFormat', 'muxer', 'libavdevice/alldevices.c', 'outdev_list', 'outdev'],
-  ['AVInputFormat', 'demuxer', 'libavdevice/alldevices.c', 'indev_list', 'indev'],
+  ['FFInputFormat', 'demuxer', 'libavdevice/alldevices.c', 'indev_list', 'indev'],
 ]
 
 find_things_extern = find_program('find_things_extern.py')
@@ -2871,9 +3007,6 @@ subdir('libavformat')
 subdir('libavfilter')
 subdir('libavdevice')
 subdir('fftools')
-
-util_list = ['cuda', 'd3d11va', 'dxva2', 'libdrm', 'lzo', 'mediacodec', 'opencl', 'qsv', 'vaapi', 'vdpau', 'videotoolbox']
-
 
 things_to_print = [
   ['libavcodec/codec_list.c', 'FFCodec', 'codec_list', encoder_list + decoder_list],
@@ -3134,10 +3267,18 @@ foreach built_lib : built_libs
 
   optional_sources = get_variable('lib@0@_optional_sources'.format(built_lib[0]), {})
   optional_tests = get_variable('lib@0@_optional_tests'.format(built_lib[0]), {})
+  # https://github.com/FFmpeg/FFmpeg/commit/887a7817b6671cd5dce9ba9bf97b88afdbbe7137
+  optional_includes = get_variable('lib@0@_optional_includes'.format(built_lib[0]), {})
+
+  special_sources = {}
 
   foreach comp_name, comp_sources : optional_sources
     if conf.get(comp_name, 0) == 1
-      sources += comp_sources
+      if optional_includes.has_key(comp_name)
+        special_sources += {comp_name: special_sources.get(comp_name, []) + comp_sources}
+      else
+        sources += comp_sources
+      endif
     endif
 
     if languages_map.has_key(comp_name)
@@ -3209,6 +3350,7 @@ foreach built_lib : built_libs
 
   if x86asm_sources.length() > 0
     # FIXME dedup should happen in meson
+    # FIXME dedup should work with file instances from different subdirs
     deduped_sources = []
     foreach source : x86asm_sources
       if not deduped_sources.contains(source)
@@ -3256,7 +3398,35 @@ foreach built_lib : built_libs
     link_args += cc.get_supported_link_arguments('/FORCE:UNRESOLVED')
   endif
 
+  special_files = []
+  special_includes = []
+  special_objects = []
+
+  foreach k, v : special_sources
+    foreach src : v
+      if not sources.contains(src)
+        special_files += [src]
+      endif
+    endforeach
+    special_includes += optional_includes[k]
+  endforeach
+
+  if special_files.length() > 0
+    special_static_lib = static_library('@0@-static-special'.format(built_lib[0]), special_files,
+      dependencies: deps,
+      include_directories: common_incs + special_includes,
+      link_with: link_with,
+      link_args: static_link_args,
+      c_args: c_args,
+      pic: conf.get('pic') == 1,
+      implicit_include_directories : false,
+      install: false
+    )
+    special_objects = special_static_lib.extract_all_objects(recursive: true)
+  endif
+
   static_lib = static_library('@0@-static'.format(built_lib[0]), sources + gen_objects + [config_h, config_components_h],
+    objects: special_objects,
     dependencies: deps,
     include_directories: common_incs,
     link_with: link_with,

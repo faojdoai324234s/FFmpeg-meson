@@ -31,7 +31,7 @@ libavcodec_x86_optional_sources = {
   'h264dsp' : files('h264dsp_init.c'),
   'h264pred' : files('h264_intrapred_init.c'),
   'h264qpel' : files('h264_qpel.c'),
-  'hevc_decoder' : files('hevcdsp_init.c'),
+  'hevc_decoder' : files('hevcdsp_init.c','h26x/h2656dsp.c'),
   'hpeldsp' : files('hpeldsp_init.c'),
   'huffyuvdsp' : files('huffyuvdsp_init.c'),
   'huffyuvencdsp' : files('huffyuvencdsp_init.c'),
@@ -103,7 +103,7 @@ libavcodec_x86_x86asm_optional_sources = {
   'h264dsp' : files('h264_deblock.asm','h264_deblock_10bit.asm','h264_idct.asm','h264_idct_10bit.asm','h264_weight.asm','h264_weight_10bit.asm'),
   'h264pred' : files('h264_intrapred.asm','h264_intrapred_10bit.asm'),
   'h264qpel' : files('h264_qpel_8bit.asm','h264_qpel_10bit.asm','fpel.asm','qpel.asm'),
-  'hevc_decoder' : files('hevc_add_res.asm','hevc_deblock.asm','hevc_idct.asm','hevc_mc.asm','hevc_sao.asm','hevc_sao_10bit.asm'),
+  'hevc_decoder' : files('hevc_add_res.asm','hevc_deblock.asm','hevc_idct.asm','hevc_mc.asm','hevc_sao.asm','hevc_sao_10bit.asm'), # MANUAL
   'hpeldsp' : files('fpel.asm','hpeldsp.asm'),
   'huffyuvdsp' : files('huffyuvdsp.asm'),
   'huffyuvencdsp' : files('huffyuvencdsp.asm'),
@@ -180,6 +180,10 @@ libavcodec_x86_optional_tests = {
 
 #### --- END GENERATED --- ####
 
+subdir('vvc')
+
+libavcodec_x86_optional_sources += libavcodec_x86_vvc_optional_sources
+
 # This file results in empty codegen and empty PDB generation otherwise.
 # https://bugzilla.nasm.us/show_bug.cgi?id=3392738
 # https://developercommunity.visualstudio.com/t/MSVC-Hangs-when-compiling-ffmpeg-When-l/10233953
@@ -190,12 +194,18 @@ if conf.get('x86_32', 0) == 1
 elif conf.get('x86_64', 0) == 1
   # Alternatively,
   # panic: ../libavcodec/x86/simple_idct10.asm: assertion cv8_state.source_files != NULL failed at output/codeview.c:512
+  libavcodec_x86_x86asm_optional_sources += libavcodec_x86_vvc_x86asm_optional_sources
   libavcodec_x86_x86asm_optional_sources += {
+    'hevc_decoder': libavcodec_x86_x86asm_optional_sources ['hevc_decoder'] + files('h26x/h2656_inter.asm'),
     'idctdsp': libavcodec_x86_x86asm_optional_sources ['idctdsp'] + files('simple_idct10.asm'),
     'mlp_decoder': libavcodec_x86_x86asm_optional_sources ['mlp_decoder'] + files('mlpdsp.asm'),
     'cfhd_encoder': libavcodec_x86_x86asm_optional_sources ['cfhd_encoder'] + files('cfhdencdsp.asm'),
     'prores_decoder': libavcodec_x86_x86asm_optional_sources ['prores_decoder'] + files('proresdsp.asm'),
     'prores_lgpl_decoder': libavcodec_x86_x86asm_optional_sources ['prores_lgpl_decoder'] + files('proresdsp.asm'),
     'truehd_decoder': libavcodec_x86_x86asm_optional_sources ['truehd_decoder'] + files('mlpdsp.asm'),
+    'vvc_decoder': libavcodec_x86_x86asm_optional_sources ['vvc_decoder'] + files('h26x/h2656_inter.asm'),
+  }
+  libavcodec_optional_sources += {
+    'vvc_decoder': libavcodec_optional_sources ['vvc_decoder'] + files('h26x/h2656dsp.c')
   }
 endif

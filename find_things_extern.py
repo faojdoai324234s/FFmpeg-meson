@@ -23,7 +23,7 @@ import re
 
 EXTERN_THINGS = [
     ['FFOutputFormat', 'muxer', 'libavformat/allformats.c', 'muxer_list'],
-    ['AVInputFormat', 'demuxer', 'libavformat/allformats.c', 'demuxer_list'],
+    ['FFInputFormat', 'demuxer', 'libavformat/allformats.c', 'demuxer_list'],
     ['FFCodec', 'encoder', 'libavcodec/allcodecs.c', 'encoder_list'],
     ['FFCodec', 'decoder', 'libavcodec/allcodecs.c', 'decoder_list'],
     ['AVCodecParser', 'parser', 'libavcodec/parsers.c', 'parser_list'],
@@ -31,8 +31,9 @@ EXTERN_THINGS = [
     ['FFHWAccel', 'hwaccel', 'libavcodec/hwaccels.h', 'hwaccel_list'],
     ['URLProtocol', 'protocol', 'libavformat/protocols.c', 'protocol_list'],
     ['FFOutputFormat', 'muxer', 'libavdevice/alldevices.c', 'outdev_list', 'outdev'],
-    ['AVInputFormat', 'demuxer', 'libavdevice/alldevices.c', 'indev_list', 'indev'],
+    ['FFInputFormat', 'demuxer', 'libavdevice/alldevices.c', 'indev_list', 'indev'],
 ]
+
 
 def list_components(infile, type, suffix, thing_suffix):
     things = []

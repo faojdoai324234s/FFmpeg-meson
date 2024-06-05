@@ -6,7 +6,8 @@ fftools_sources = files(
 )
 
 fftools_optional_sources = {
-  # MANUAL 'ffmpeg ' : files('ffmpeg_dec.c','ffmpeg_demux.c','ffmpeg_enc.c','ffmpeg_filter.c','ffmpeg_hw.c','ffmpeg_mux.c','ffmpeg_mux_init.c','ffmpeg_opt.c','objpool.c','sync_queue.c','thread_queue.c'),
+  # MANUAL 'ffmpeg ' : files('ffmpeg_dec.c','ffmpeg_demux.c','ffmpeg_enc.c','ffmpeg_filter.c','ffmpeg_hw.c','ffmpeg_mux.c','ffmpeg_mux_init.c','ffmpeg_opt.c','ffmpeg_sched.c','objpool.c','sync_queue.c','thread_queue.c'),
+  # MANUAL 'ffplay ' : files('ffplay_renderer.c'),
 }
 
 fftools_x86asm_optional_sources = {
@@ -50,6 +51,7 @@ ffmpeg_sources = files(
   'ffmpeg_mux.c',
   'ffmpeg_mux_init.c',
   'ffmpeg_opt.c',
+  'ffmpeg_sched.c',
   'objpool.c',
   'sync_queue.c',
   'thread_queue.c',
@@ -57,7 +59,8 @@ ffmpeg_sources = files(
 )
 
 ffplay_sources = files(
-  'ffplay.c'
+  'ffplay.c',
+  'ffplay_renderer.c',
 )
 
 ffprobe_sources = files(

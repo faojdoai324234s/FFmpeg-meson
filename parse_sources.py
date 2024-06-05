@@ -18,9 +18,8 @@
 
 import re
 import os
+from pathlib import Path
 import io
-import sys
-from pprint import pprint
 from collections import defaultdict
 
 ASM_EXTS = ['asm', 'S', 'c']
@@ -46,8 +45,8 @@ SOURCE_TYPE_DIRS = {'test-prog': 'tests'}
 
 
 def add_source(f, source: str, prefix='', suffix=''):
-    if not source.startswith(('opencl/', 'metal/', 'cuda/')):
-        source = os.path.basename(source)
+    if not source.startswith(('opencl/', 'metal/', 'cuda/', '../', 'h26x/')):
+        source = source.split('/', maxsplit=1)[-1]
     f.write("%s'%s'%s" % (prefix, source, suffix))
 
 
@@ -96,7 +95,7 @@ def make_to_meson(path):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'c'
-            elif re.match('OBJS-ffmpeg\s+\+\=.*', l):
+            elif re.match('OBJS-(ffmpeg|ffplay)\s+\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('OBJS-')[1]
                 source_type = 'c' # arguable ^^
@@ -243,14 +242,32 @@ def make_to_meson(path):
                 fname = basename[0]
                 for ext in exts:
                     tmpf = fname + '.' + ext
-                    if os.path.exists(os.path.join(path, SOURCE_TYPE_DIRS.get(source_type, ''), tmpf)):
-                        ifiles.append(tmpf)
-                        add_language(languages_map, ext, label)
-                        break
-                    elif os.path.exists(os.path.join(path, SOURCE_TYPE_DIRS.get(source_type, ''), os.path.basename(tmpf))):
-                        ifiles.append(tmpf)
-                        add_language(languages_map, ext, label)
-                        break
+                    root = path.split('/')[0]
+                    path_options = [
+                        os.path.join(path, SOURCE_TYPE_DIRS.get(source_type, ''), tmpf),
+                        os.path.join(path, SOURCE_TYPE_DIRS.get(source_type, ''), os.path.basename(tmpf)),
+                        # x86/h26x
+                        os.path.join(root, SOURCE_TYPE_DIRS.get(source_type, ''), os.path.dirname(tmpf), os.path.basename(tmpf))
+                    ]
+                    for i, p in enumerate(path_options):
+                        if os.path.exists(p):
+                            # What path needs to go into the Meson file?
+                            src_path = Path(p)
+                            meson_path = Path(path)
+                            if i == 2:
+                                if src_path.is_relative_to(meson_path):
+                                    tmpf = src_path.relative_to(meson_path).as_posix()
+                                else:
+                                    src_path = src_path.absolute()
+                                    meson_path = meson_path.absolute().parent
+                                    tmpf = '../' + src_path.relative_to(meson_path).as_posix()
+                            elif i == 1:
+                                tmpf = src_path.relative_to(meson_path).as_posix()
+                                print(tmpf)
+                            ifiles.append(tmpf)
+                            add_language(languages_map, ext, label)
+                            break
+                    # print("WARNING: %s do not exist" % str(path_options))
 
             if len([of for of in ofiles if not of.startswith("$")]) != len(ifiles):
                 print("WARNING: %s and %s size don't match, not building!" % ([of for of in ofiles if not of.startswith("$")], ifiles))
@@ -402,10 +419,13 @@ paths = [
         'libswscale/arm',
         'libswscale/x86',
         'libavcodec',
+        'libavcodec/bsf',
         'libavcodec/aarch64',
         'libavcodec/arm',
         'libavcodec/neon',
         'libavcodec/x86',
+        'libavcodec/x86/vvc',
+        'libavcodec/vvc',
         'libswresample',
         'libswresample/aarch64',
         'libswresample/arm',
