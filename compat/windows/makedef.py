@@ -86,7 +86,7 @@ if __name__ == '__main__':
                 started = 1
                 line = re.sub(r'^\s+global: *', '', line)
             else:
-                if re.match('^\s+local:', line):
+                if re.match(r'^\s+local:', line):
                     started = 0
 
             if started == 0:
@@ -110,12 +110,32 @@ if __name__ == '__main__':
         # Use eval, since NM="nm -g"
         # Add -j to ensure only symbol names are output (otherwise in macOS
         # a race condition can occur in the redirection)
-        s = subprocess.run([args.nm, '--defined-only',
-                            '-g', '-j', libname], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, check=False)
+        # And use `--no-llvm-bc` in case it's /usr/bin/nm on macOS
+        s = subprocess.run(
+            [args.nm, '-U', '-g', '-j', '--no-llvm-bc', libname],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+            check=False,
+        )
+        if s.returncode != 0:
+            # If it fails, retry without skipping LLVM bitcode (macOS flag)
+            s = subprocess.run(
+                [args.nm, '-U', '-g', '-j', libname],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                check=False,
+            )
         if s.returncode != 0:
             # -j was added only in Binutils 2.37
-            s = subprocess.run([args.nm, '--defined-only',
-                                '-g', libname], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True, check=True)
+            s = subprocess.run(
+                [args.nm, '-U', '-g', libname],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                universal_newlines=True,
+                check=True,
+            )
         dump = s.stdout.splitlines()
         # Exclude lines with ':' (object name)
         dump = [x for x in dump if ":" not in x]
@@ -137,9 +157,9 @@ if __name__ == '__main__':
                 end = i
         dump = dump[start:end]
         # Substitute prefix out
-        dump = [re.sub(f'\s+{prefix}', ' ', x) for x in dump]
+        dump = [re.sub(fr'\s+{prefix}', ' ', x) for x in dump]
         # Substitute big chonky spaces out
-        dump = [re.sub(f'\s+', ' ', x) for x in dump]
+        dump = [re.sub(r'\s+', ' ', x) for x in dump]
         # Exclude blank lines
         dump = [x for x in dump if len(x) > 0]
         # Take only the *second* field (split by spaces)
