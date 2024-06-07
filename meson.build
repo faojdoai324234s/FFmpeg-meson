@@ -2897,6 +2897,17 @@ foreach extern_thing : extern_things
   set_variable(variable_name, list)
 endforeach
 
+# FIXME: FFmpeg added the AudioToolbox backend but it uses elements only
+# available in macOS.
+# See e.g. https://developer.apple.com/documentation/coreaudio/kaudioobjectsystemobject
+# https://github.com/FFmpeg/FFmpeg/commit/b737575c76ff33ef5ffd602ebf3e30cc71ec536c
+if conf.get('audiotoolbox') == 1
+  if cc.get_define('TARGET_OS_IOS', prefix: '#include <TargetConditionals.h>') == '1'
+    warning('Disabling AudioToolbox output device as it is not compatible with iOS.\nPlease report this to the upstream developers: https://ffmpeg.org/bugreports.html')
+    conf.set('audiotoolbox_outdev', 0)
+  endif
+endif
+
 find_things = find_program('find_things.py')
 
 result = run_command(find_things, files('libavfilter/allfilters.c'), check: true)
