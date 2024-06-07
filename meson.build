@@ -485,6 +485,12 @@ threads_list = [
   'w32threads',
 ]
 
+atomics_list = [
+  'atomics_gcc',
+  'atomics_suncc',
+  'atomics_win32',
+]
+
 toolchain_features = [
   'as_arch_directive',
   'as_dn_directive',
