@@ -2532,7 +2532,8 @@ if conf.get('x86') == 1
   if meson.is_cross_build()
     ebp_available = cc.links(ebp_available_test, name: 'if_ebp_available_this_should_crash')
   else
-    ebp_available = cc.run(ebp_available_test, name: 'if_ebp_available_this_should_crash').returncode() != 0
+    ebp_result = cc.run(ebp_available_test, name: 'if_ebp_available_this_should_crash')
+    ebp_available = ebp_result.compiled() and ebp_result.returncode() != 0
   endif
 
   # FFmpeg upstream doesn't know that EBP is always unavailable
