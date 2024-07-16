@@ -134,7 +134,7 @@ if __name__ == '__main__':
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
                 universal_newlines=True,
-                check=True,
+                check=False,
             )
         if s.returncode != 0:
             # -U was added only in Binutils 2.39
@@ -143,7 +143,7 @@ if __name__ == '__main__':
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
                 universal_newlines=True,
-                check=False,
+                check=True,
             )
         dump = s.stdout.splitlines()
         # Exclude lines with ':' (object name)
