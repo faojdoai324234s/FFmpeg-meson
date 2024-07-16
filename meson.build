@@ -3229,7 +3229,7 @@ config_components_h = configure_file(
 
 rc = find_program('rc_workaround.py', required: host_machine.system() == 'windows')
 
-build_tests = get_option('tests').allowed()
+build_tests = get_option('tests').allowed() and meson.can_run_host_binaries()
 
 foreach built_lib : built_libs
   sources = get_variable('lib@0@_sources'.format(built_lib[0])) + [ffversion_h]
