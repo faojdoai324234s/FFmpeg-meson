@@ -333,7 +333,10 @@ static int huf_unpack_enc_table(GetByteContext *gb,
         return ret;
 
     for (; im <= iM; im++) {
-        uint64_t l = freq[im] = get_bits(&gbit, 6);
+        int l;
+        if (get_bits_left(&gbit) < 6)
+            return AVERROR_INVALIDDATA;
+        l = freq[im] = get_bits(&gbit, 6);
 
         if (l == LONG_ZEROCODE_RUN) {
             int zerun = get_bits(&gbit, 8) + SHORTEST_LONG_RUN;
@@ -1939,21 +1942,27 @@ static int decode_header(EXRContext *s, AVFrame *frame)
 
             bytestream2_get_buffer(gb, key, FFMIN(sizeof(key) - 1, var_size));
             if (strncmp("scanlineimage", key, var_size) &&
-                strncmp("tiledimage", key, var_size))
-                return AVERROR_PATCHWELCOME;
+                strncmp("tiledimage", key, var_size)) {
+                ret = AVERROR_PATCHWELCOME;
+                goto fail;
+            }
 
             continue;
         } else if ((var_size = check_header_variable(s, "preview",
                                                      "preview", 16)) >= 0) {
             uint32_t pw = bytestream2_get_le32(gb);
             uint32_t ph = bytestream2_get_le32(gb);
-            uint64_t psize = pw * ph;
-            if (psize > INT64_MAX / 4)
-                return AVERROR_INVALIDDATA;
+            uint64_t psize = pw * (uint64_t)ph;
+            if (psize > INT64_MAX / 4) {
+                ret = AVERROR_INVALIDDATA;
+                goto fail;
+            }
             psize *= 4;
 
-            if ((int64_t)psize >= bytestream2_get_bytes_left(gb))
-                return AVERROR_INVALIDDATA;
+            if ((int64_t)psize >= bytestream2_get_bytes_left(gb)) {
+                ret = AVERROR_INVALIDDATA;
+                goto fail;
+            }
 
             bytestream2_skip(gb, psize);
 

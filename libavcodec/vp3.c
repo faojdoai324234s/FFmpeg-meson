@@ -2012,8 +2012,7 @@ static int vp4_mc_loop_filter(Vp3DecodeContext *s, int plane, int motion_x, int 
         x_offset = (-(x + 2) & 7) + 2;
         y_offset = (-(y + 2) & 7) + 2;
 
-        if (x_offset > 8 + x_subpel && y_offset > 8 + y_subpel)
-            return 0;
+        av_assert1(!(x_offset > 8 + x_subpel && y_offset > 8 + y_subpel));
 
         s->vdsp.emulated_edge_mc(loop, motion_source - stride - 1,
              loop_stride, stride,
@@ -2345,6 +2344,8 @@ static av_cold int vp3_decode_init(AVCodecContext *avctx)
     s->avctx  = avctx;
     s->width  = FFALIGN(avctx->coded_width, 16);
     s->height = FFALIGN(avctx->coded_height, 16);
+    if (s->width < 18)
+        return AVERROR_PATCHWELCOME;
     if (avctx->codec_id != AV_CODEC_ID_THEORA)
         avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     avctx->chroma_sample_location = AVCHROMA_LOC_CENTER;
@@ -2922,7 +2923,9 @@ static int theora_decode_header(AVCodecContext *avctx, GetBitContext *gb)
     /* sanity check */
     if (av_image_check_size(visible_width, visible_height, 0, avctx) < 0 ||
         visible_width  + offset_x > s->width ||
-        visible_height + offset_y > s->height) {
+        visible_height + offset_y > s->height ||
+        visible_width < 18
+    ) {
         av_log(avctx, AV_LOG_ERROR,
                "Invalid frame dimensions - w:%d h:%d x:%d y:%d (%dx%d).\n",
                visible_width, visible_height, offset_x, offset_y,
@@ -2968,6 +2971,8 @@ static int theora_decode_header(AVCodecContext *avctx, GetBitContext *gb)
     } else
         avctx->pix_fmt = AV_PIX_FMT_YUV420P;
 
+    if (s->width < 18)
+        return AVERROR_PATCHWELCOME;
     ret = ff_set_dimensions(avctx, s->width, s->height);
     if (ret < 0)
         return ret;
