@@ -69,10 +69,6 @@ libavcodec_sources = files(
   'utils.c',
   'vorbis_parser.c',
   'xiph.c',
-  'file_open.c',
-  'pthread.c',
-  'pthread_slice.c',
-  'pthread_frame.c',
   'dctref.c',
 )
 
@@ -515,6 +511,7 @@ libavcodec_optional_sources = {
   'libcelt_decoder' : files('libcelt_dec.c'),
   'libcodec2_decoder' : files('libcodec2.c','codec2utils.c'),
   'libcodec2_encoder' : files('libcodec2.c','codec2utils.c'),
+  'libc_msvcrt' : files('file_open.c'),
   'libdav1d_decoder' : files('libdav1d.c'),
   'libdavs2_decoder' : files('libdavs2.c'),
   'libfdk_aac_decoder' : files('libfdk-aacdec.c'),
@@ -932,6 +929,7 @@ libavcodec_optional_sources = {
   'texturedspenc' : files('texturedspenc.c'),
   'text_decoder' : files('textdec.c','ass.c'),
   'text_encoder' : files('srtenc.c','ass_split.c'),
+  'threads' : files('pthread.c','pthread_slice.c','pthread_frame.c'),
   'tiertexseqvideo_decoder' : files('tiertexseqv.c'),
   'tiff_decoder' : files('tiff.c','lzw.c','faxcompr.c','tiff_common.c'),
   'tiff_encoder' : files('tiffenc.c','rle.c','lzwenc.c'),

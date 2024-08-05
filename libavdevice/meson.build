@@ -18,7 +18,6 @@ libavdevice_sources = files(
   'alldevices.c',
   'avdevice.c',
   'utils.c',
-  'file_open.c',
 )
 
 libavdevice_optional_sources = {
@@ -40,6 +39,7 @@ libavdevice_optional_sources = {
   'kmsgrab_indev' : files('kmsgrab.c'),
   'lavfi_indev' : files('lavfi.c'),
   'libcdio_indev' : files('libcdio.c'),
+  'libc_msvcrt' : files('file_open.c'),
   'libdc1394_indev' : files('libdc1394.c'),
   'openal_indev' : files('openal-dec.c'),
   'opengl_outdev' : files('opengl_enc.c'),

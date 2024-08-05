@@ -2713,6 +2713,8 @@ foreach built_lib : built_libs
 
   link_args = cc.get_supported_link_arguments([vflag])
 
+  static_link_args = []
+
   if cc.get_id() == 'msvc'
     message('Applying MSVC link workaround for Debug mode and static libraries.')
     static_link_args += cc.get_supported_link_arguments('/FORCE:UNRESOLVED')

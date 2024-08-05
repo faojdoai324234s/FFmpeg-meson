@@ -32,7 +32,6 @@ libavfilter_sources = files(
   'graphparser.c',
   'transform.c',
   'video.c',
-  'pthread.c',
 )
 
 libavfilter_optional_sources = {
@@ -468,6 +467,7 @@ libavfilter_optional_sources = {
   'testsrc2_filter' : files('vsrc_testsrc.c'),
   'testsrc_filter' : files('vsrc_testsrc.c'),
   'thistogram_filter' : files('vf_histogram.c'),
+  'threads' : files('pthread.c'),
   'threshold_filter' : files('vf_threshold.c','framesync.c'),
   # 'thumbnail_cuda_filter' : files('vf_thumbnail_cuda.c'),
   'thumbnail_filter' : files('vf_thumbnail.c'),
@@ -549,7 +549,7 @@ libavfilter_mmx_optional_sources = {
 
 libavfilter_tests = [
   ['drawutils', files('tests/drawutils.c')],
-  # MANUAL ['filtfmts', files('tests/filtfmts.c')],
+ # MANUAL ['filtfmts', files('tests/filtfmts.c')],
   ['formats', files('tests/formats.c')],
   ['integral', files('tests/integral.c')],
 ]

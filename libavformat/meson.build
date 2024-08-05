@@ -32,7 +32,6 @@ libavformat_sources = files(
   'sdp.c',
   'url.c',
   'utils.c',
-  'file_open.c',
 )
 
 libavformat_optional_sources = {
@@ -284,6 +283,7 @@ libavformat_optional_sources = {
   'kvag_muxer' : files('kvag.c','rawenc.c'),
   'latm_muxer' : files('latmenc.c','rawenc.c'),
   'libamqp_protocol' : files('libamqp.c'),
+  'libc_msvcrt' : files('file_open.c'),
   'libgme_demuxer' : files('libgme.c'),
   'libmodplug_demuxer' : files('libmodplug.c'),
   'libopenmpt_demuxer' : files('libopenmpt.c'),
