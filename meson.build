@@ -22,7 +22,7 @@ project('FFmpeg', 'c',
   # C11 is needed for Metal support
   # Static libraries by default following upstream
   default_options: [ 'buildtype=debugoptimized', 'c_std=c11', 'cpp_std=c++11', 'default_library=static'],
-  version: '7.0.1',
+  version: '7.0.2',
 )
 
 # HOWTO:
