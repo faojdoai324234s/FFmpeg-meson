@@ -2517,12 +2517,8 @@ if conf.get('x86') == 1
     if host_machine.system() == 'windows'
       nasm_version = '>=2.12'
     endif
-    x86asm = find_program('nasm', version: nasm_version, required: false)
+    x86asm = find_program('nasm', version: nasm_version, required: host_machine.system() in ['windows', 'darwin'])
     x86asm_type = 'nasm'
-    if not x86asm.found()
-      subproject('win-nasm')
-      x86asm = find_program('nasm', version: nasm_version, required: false)
-    endif
     if not x86asm.found()
       x86asm = find_program('yasm', required: false)
       x86asm_type = 'yasm'
@@ -2702,8 +2698,10 @@ if asm_format.startswith('win')
   else
     debug_format = 'null'
   endif
+elif asm_format.startswith('macho')
+  debug_format = 'null'
 else
-  # Supported on Linux, BSD, macOS
+  # Supported on Linux, BSD
   debug_format = 'dwarf'
 endif
 # Add the format args
@@ -2712,6 +2710,8 @@ if x86asm_type == 'yasm'
     asm_args += ['-g', 'dwarf2']
   elif debug_format == 'cv8'
     asm_args += ['-g', 'cv8']
+  elif debug_format == 'null'
+    asm_args += ['-g', 'null']
   else
     asm_args += ['-g', 'null']
   endif
