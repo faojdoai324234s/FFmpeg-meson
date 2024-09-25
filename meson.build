@@ -1016,7 +1016,7 @@ endforeach
 
 if get_option('opencl').allowed() and get_option('videotoolbox').allowed()
   dep = dependency('appleframeworks', modules: ['VideoToolbox', 'OpenCL'], required: false)
-  conf.set10(opencl_videotoolbox, false)
+  conf.set10('opencl_videotoolbox', false)
   if cc.has_function('clCreateImageFromIOSurfaceWithPropertiesAPPLE', prefix: '#include <OpenCL/cl_gl_ext.h>', dependencies: dep)
     conf.set10(opencl_videotoolbox, true)
     common_deps += [dep]
