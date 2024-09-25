@@ -2400,6 +2400,14 @@ if conf.get('libzvbi') == 1
     prefix: '#include <libzvbi.h>', dependencies: libzvbi_extra_deps))
 endif
 
+# Manual patch for Cairo
+# https://gitlab.freedesktop.org/cairo/cairo/-/merge_requests/265
+if conf.get('librsvg') == 1
+  if conf.get('static') == 1 and host_machine.system() == 'windows'
+    project_c_args += ['-DCAIRO_WIN32_STATIC_BUILD']
+  endif
+endif
+
 foreach req : ['xlib_x11', 'xlib_xext', 'xlib_xv']
   if conf.get(req) == 0
     conf.set10('xlib', false)
