@@ -966,13 +966,6 @@ check_pkg_config = [
   ['libvorbis', ['vorbis/codec.h'], ['vorbis_info_init'], {'pkg': 'vorbis'}],
   ['libvorbisenc', ['vorbis/vorbisenc.h'], ['vorbis_encode_init'], {'pkg': 'vorbisenc'}],
   ['libvpl', ['mfxvideo.h', 'mfxdispatcher.h'], ['MFXLoad'], {'pkg': 'vpl', 'version': '>= 2.6', 'c_args': '-DMFX_DEPRECATED_OFF'}],
-  ['libvpx', ['vpx/vpx_decoder.h', 'vpx/vpx_encoder.h'], [], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
-  ['libvpx_vp8_decoder', ['vpx/vpx_decoder.h', 'vpx/vp8dx.h'], ['vpx_codec_vp8_dx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
-  ['libvpx_vp8_encoder', ['vpx/vpx_encoder.h', 'vpx/vp8cx.h'], ['vpx_codec_vp8_cx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
-  ['libvpx_vp9_decoder', ['vpx/vpx_decoder.h', 'vpx/vp8dx.h'], ['vpx_codec_vp9_dx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
-  ['libvpx_vp9_encoder', ['vpx/vpx_encoder.h', 'vpx/vp8cx.h'], ['vpx_codec_vp9_cx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
-  ['libwebp', ['webp/encode.h'], ['WebPGetEncoderVersion'], {'version': '>= 0.2.0'}],
-  ['libwebp_anim_encoder', ['webp/mux.h'], ['WebPAnimEncoderOptionsInit'], {'pkg': 'libwebpmux', 'version': '>= 0.4.0'}],
   ['libx264', ['stdint.h', 'x264.h'], ['x264_encoder_encode'], {'pkg': 'x264'}],
   ['libx265', ['x265.h'], ['x265_api_get'], {'pkg': 'x265'}],
   ['libxcb', ['xcb/xcb.h'], ['xcb_connect'], {'pkg': 'xcb', 'version': '>= 1.4'}],
@@ -1000,6 +993,22 @@ check_pkg_config = [
   ['xlib_xv', ['X11/Xlib.h', 'X11/extensions/Xvlib.h'], ['XvGetPortAttribute'], {'pkg': 'xv'}],
   ['zlib', ['zlib.h'], ['zlibVersion'], {'pkg': 'zlib'}],
 ]
+
+if get_option('libvpx').allowed()
+  check_pkg_config += [
+    ['libvpx_vp8_decoder', ['vpx/vpx_decoder.h', 'vpx/vp8dx.h'], ['vpx_codec_vp8_dx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
+    ['libvpx_vp8_encoder', ['vpx/vpx_encoder.h', 'vpx/vp8cx.h'], ['vpx_codec_vp8_cx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
+    ['libvpx_vp9_decoder', ['vpx/vpx_decoder.h', 'vpx/vp8dx.h'], ['vpx_codec_vp9_dx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
+    ['libvpx_vp9_encoder', ['vpx/vpx_encoder.h', 'vpx/vp8cx.h'], ['vpx_codec_vp9_cx'], {'pkg': 'vpx', 'version': '>= 1.4.0'}],
+  ]
+endif
+
+if get_option('libwebp').allowed()
+  check_pkg_config += [
+    ['libwebp_encoder', ['webp/encode.h'], ['WebPGetEncoderVersion'], {'version': '>= 0.2.0'}],
+    ['libwebp_anim_encoder', ['webp/mux.h'], ['WebPAnimEncoderOptionsInit'], {'pkg': 'libwebpmux', 'version': '>= 0.4.0'}],
+  ]
+endif
 
 foreach check : check_pkg_config
   all_checks += [['pkg-config', check]]
