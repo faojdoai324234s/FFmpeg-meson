@@ -2308,6 +2308,9 @@ if conf.get('openssl') == 1 and conf.get('mbedtls') == 1
   error('OpenSSL and mbedTLS must not be enabled at the same time.')
 endif
 
+# Manual check for fontconfig
+conf.set10('fontconfig', conf.get('libfontconfig').is_odd())
+
 # Manual check for OpenSSL
 if conf.get('openssl') == 1
   test_openssl_dep = dependency('openssl', required: false, version: '>= 3.0.0')
@@ -2340,6 +2343,12 @@ if conf.get('avisynth') == 1
   if not cc.links(cpp_cond.format('avisynth/avs/version.h', 'AVS_MAJOR_VER >= 3 && AVS_MINOR_VER >= 7 && AVS_BUGFIX_VER >= 1 || AVS_MAJOR_VER >= 3 && AVS_MINOR_VER > 7 || AVS_MAJOR_VER > 3'), name: 'avisynth version')
     error('AviSynth+ header version must be >= 3.7.1')
   endif
+endif
+
+# Manual check for amf
+if conf.get('amf') == 1
+  conf.set('amf', cc.links(cpp_cond.format('AMF/core/Version.h', 
+  '(AMF_VERSION_MAJOR << 48 | AMF_VERSION_MINOR << 32 | AMF_VERSION_RELEASE << 16 | AMF_VERSION_BUILD_NUM) >= 0x00010004001d0000'), name: 'AMF version'))
 endif
 
 # Manual check for libmfx
