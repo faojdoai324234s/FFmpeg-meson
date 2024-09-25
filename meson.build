@@ -2408,6 +2408,23 @@ if conf.get('librsvg') == 1
   endif
 endif
 
+# Manual patch for libass
+# Brings libiconv, but static libiconv on Cerbero is MinGW based,
+# which does not embed mingwex on the archives
+if conf.get('libass') == 1
+  test_libass_dep = dependency('libass', required: false, version: '>= 0.11.0', static: conf.get('static').is_odd())
+  if test_libass_dep.found() and cc.has_header('iconv.h', dependencies: test_libass_dep) and host_machine.system() == 'windows'
+    conf.set10('libass',
+      cc.links('''
+        #include <iconv.h>
+        int main() { return iconvlist(NULL, NULL); }''',
+        name: 'libass is properly Windows ABI',
+        dependencies: test_libass_dep
+      )
+    )
+  endif
+endif
+
 foreach req : ['xlib_x11', 'xlib_xext', 'xlib_xv']
   if conf.get(req) == 0
     conf.set10('xlib', false)
