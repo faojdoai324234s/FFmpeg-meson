@@ -2093,16 +2093,16 @@ foreach check : all_checks
         pkg_name = opts.get('pkg', name)
         if opts.has_key('versions')
           foreach version: opts['versions']
-            dep = dependency(pkg_name, required: false, version: version)
+            dep = dependency(pkg_name, required: false, version: version, static: conf.get('static').is_odd())
           endforeach
 
           if not dep.found() and req.enabled()
             error('@0@ @1@ could not be found'.format(pkg_name, opts['versions']))
           endif
         elif opts.has_key('version')
-          dep = dependency(pkg_name, required : req, version: opts.get('version'))
+          dep = dependency(pkg_name, required : req, version: opts.get('version'), static: conf.get('static').is_odd())
         else
-          dep = dependency(pkg_name, required : req)
+          dep = dependency(pkg_name, required : req, static: conf.get('static').is_odd())
         endif
         found = dep.found()
         internal_dep = dep.type_name() == 'internal'
@@ -2313,7 +2313,7 @@ conf.set10('fontconfig', conf.get('libfontconfig').is_odd())
 
 # Manual check for OpenSSL
 if conf.get('openssl') == 1
-  test_openssl_dep = dependency('openssl', required: false, version: '>= 3.0.0')
+  test_openssl_dep = dependency('openssl', required: false, version: '>= 3.0.0', static: conf.get('static').is_odd())
   if test_openssl_dep.found()
     is_blocked_by_license = not get_option('version3').disabled() or get_option('gpl').disabled() or not get_option('nonfree').disabled()
     if is_blocked_by_license
