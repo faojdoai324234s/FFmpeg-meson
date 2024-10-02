@@ -1162,8 +1162,15 @@ if get_option('securetransport').allowed()
     ['securetransport', ['Security/SecureTransport.h', 'Security/Security.h'], ['SSLCreateContext'], [], {'frameworks': ['CoreFoundation', 'Security']}],
   ]
   check_funcs += [
-    ['SecIdentityCreate', {'c_args': ['-Wl,-framework,CoreFoundation', '-Wl,-framework,Security']}],
-    ['SecItemImport', {'c_args': ['-Wl,-framework,CoreFoundation', '-Wl,-framework,Security']}],
+    ['SecIdentityCreate', {'frameworks': ['CoreFoundation', 'Security']}],
+    ['SecItemImport', {'frameworks': ['CoreFoundation', 'Security']}],
+  ]
+endif
+
+if get_option('videotoolbox').allowed()
+  check_header_funcs += [
+    ['VTPixelRotationSessionCreate', ['VideoToolbox/VideoToolbox.h'], {'c_args': ['-Werror=unguarded-availability-new'], 'frameworks': ['VideoToolbox']}],
+    ['VTCompressionSessionPrepareToEncodeFrames', ['VideoToolbox/VTCompressionSession.h'], {'c_args': ['-Werror=unguarded-availability-new'], 'frameworks': ['VideoToolbox']}],
   ]
 endif
 
