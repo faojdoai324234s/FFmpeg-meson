@@ -16,13 +16,12 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, see <http://www.gnu.org/licenses/>.
 
-project('FFmpeg', 'c',
+project('FFmpeg', 'c', 'cpp',
   meson_version: '>= 0.60',
   license: 'LGPL2.1+',
-  # C11 is needed for Metal support
   # Static libraries by default following upstream
-  default_options: [ 'buildtype=debugoptimized', 'c_std=c11', 'cpp_std=c++11', 'default_library=static'],
-  version: '7.0.2',
+  default_options: [ 'buildtype=debugoptimized', 'c_std=c17', 'cpp_std=c++11', 'default_library=static'],
+  version: '7.1',
 )
 
 # HOWTO:
@@ -192,12 +191,7 @@ example_list = [
 
 arch_list = [
   'aarch64',
-  'alpha',
   'arm',
-  'avr32',
-  'avr32_ap',
-  'avr32_uc',
-  'bfin',
   'ia64',
   'loongarch',
   'loongarch32',
@@ -210,7 +204,6 @@ arch_list = [
   'ppc64',
   'riscv',
   's390',
-  'sh4',
   'sparc',
   'sparc64',
   'tilegx',
@@ -304,13 +297,10 @@ arch_features = [
 ]
 
 builtin_list = [
-  'atomic_cas_ptr',
-  'machine_rw_barrier',
   'MemoryBarrier',
   'mm_empty',
   'rdtsc',
   'sem_timedwait',
-  'sync_val_compare_and_swap',
 ]
 
 have_list_cmdline = [
@@ -326,6 +316,7 @@ have_list_pub = [
 
 headers_list = [
   'arpa_inet_h',
+  'asm_hwprobe_h',
   'asm_types_h',
   'cdio_paranoia_h',
   'cdio_paranoia_paranoia_h',
@@ -352,6 +343,7 @@ headers_list = [
   'OpenGL_gl3_h',
   'poll_h',
   'pthread_np_h',
+  'sys_hwprobe_h',
   'sys_param_h',
   'sys_resource_h',
   'sys_select_h',
@@ -369,6 +361,7 @@ headers_list = [
 
 intrinsics_list = [
   'intrinsics_neon',
+  'intrinsics_sse2',
 ]
 
 math_funcs = [
@@ -420,6 +413,7 @@ system_funcs = [
   'clock_gettime',
   'closesocket',
   'CommandLineToArgvW',
+  'elf_aux_info',
   'fcntl',
   'getaddrinfo',
   'getauxval',
@@ -466,6 +460,8 @@ system_funcs = [
   'strerror_r',
   'sysconf',
   'sysctl',
+  'sysctlbyname',
+  'tempnam',
   'usleep',
   'UTGetOSTypeFromString',
   'VirtualAlloc',
@@ -486,8 +482,6 @@ threads_list = [
 ]
 
 atomics_list = [
-  'atomics_gcc',
-  'atomics_suncc',
   'atomics_win32',
 ]
 
@@ -550,6 +544,7 @@ types_list = [
   'struct_sockaddr_storage',
   'struct_stat_st_mtim_tv_nsec',
   'struct_v4l2_frmivalenum_discrete',
+  'struct_mfxConfigInterface',
 ]
 
 asm = get_option('asm')
@@ -559,6 +554,7 @@ conf.set10('asm', asm.allowed())
 conf.set10('faan', true)
 conf.set10('faandct', true)
 conf.set10('faanidct', true)
+conf.set10('iamf', true)
 conf.set10('optimizations', get_option('optimization') != '0')
 conf.set10('runtime_cpudetect', true)
 conf.set10('safe_bitstream_reader', true)
@@ -603,16 +599,16 @@ have_list = (arch_ext_list + arch_ext_list_external + arch_ext_list_inline + arc
   'opencl_videotoolbox',
   'perl',
   'pod2man',
+  'posix_ioctl',
   'texi2html',
   'xmllint',
   'zlib_gzip',
-  'max_align_t' # MANUAL
 ])
 
 arch_features = [
   ['aligned_stack', ['aarch64', 'ppc', 'x86']],
-  ['fast_64bit', ['aarch64', 'alpha', 'ia64', 'mips64', 'parisc64', 'ppc64', 'riscv64', 'sparc64', 'x86_64']],
-  ['fast_clz', ['aarch64', 'alpha', 'avr32', 'mips', 'ppc', 'x86']],
+  ['fast_64bit', ['aarch64', 'ia64', 'mips64', 'parisc64', 'ppc64', 'riscv64', 'sparc64', 'x86_64']],
+  ['fast_clz', ['aarch64', 'mips', 'ppc', 'x86']],
   ['simd_align_16', ['altivec', 'neon', 'sse']],
   ['simd_align_32', ['avx']],
   ['simd_align_64', ['avx512']],
@@ -902,7 +898,7 @@ check_pkg_config = [
   ['libgme', ['gme/gme.h'], ['gme_new_emu'], {}],
   ['gnutls', ['gnutls/gnutls.h'], ['gnutls_global_init'], {}],
   ['lcms2', ['lcms2.h'], ['cmsCreateContext'], {'pkg': 'lcms2', 'version': '>= 2.13'}],
-  ['libaom', ['aom/aom_codec.h'], ['aom_codec_version'], {'pkg': 'aom', 'version': '>= 0.1.0'}],
+  ['libaom', ['aom/aom_codec.h'], ['aom_codec_version'], {'pkg': 'aom', 'version': '>= 2.0.0'}],
   ['libaribb24', ['aribb24/aribb24.h'], ['arib_instance_new'], {'pkg': 'aribb24', 'version': '> 1.0.3'}],
   ['lv2', ['lilv-0/lilv/lilv.h'], ['lilv_world_new'], {'pkg': 'lilv-0'}],
   ['libass', ['ass/ass.h'], ['ass_library_init'], {'pkg': 'libass', 'version': '>= 0.11.0'}],
@@ -924,7 +920,9 @@ check_pkg_config = [
   ['libjxl', ['jxl/decode.h'], ['JxlDecoderVersion'], {'pkg': 'libjxl', 'version': '>= 0.7.0'}],
   ['libklvanc', ['libklvanc/vanc.h'], ['klvanc_context_create'], {}],
   ['libkvazaar', ['kvazaar.h'], ['kvz_api_get'], {'pkg': 'kvazaar', 'version': '>= 0.8.1'}],
+  ['liblc3', ['lc3.h'], ['lc3_hr_setup_encoder'], {'pkg': 'lc3', 'version': ['>= 1.1.0']}],
   ['liblensfun', ['lensfun.h'], ['lf_db_new'], {'pkg': 'lensfun'}],
+  ['liblcevc_dec', ['LCEVC/lcevc_dec.h'], ['LCEVC_CreateDecoder'], {'pkg': 'lcevc_dec', 'version': ['>= 2.0.0']}],
   ['libmfx', ['mfx/mfxvideo.h'], ['MFXInit'], {'pkg': 'libmfx', 'version': ['>= 1.28', '< 2.0']}],
   ['libmodplug', ['libmodplug/modplug.h'], ['ModPlug_Load'], {}],
   ['libopencv', ['opencv2/core/core_c.h'], ['cvCreateImageHeader'], {'pkg': 'opencv'}],
@@ -966,12 +964,14 @@ check_pkg_config = [
   ['libvorbis', ['vorbis/codec.h'], ['vorbis_info_init'], {'pkg': 'vorbis'}],
   ['libvorbisenc', ['vorbis/vorbisenc.h'], ['vorbis_encode_init'], {'pkg': 'vorbisenc'}],
   ['libvpl', ['mfxvideo.h', 'mfxdispatcher.h'], ['MFXLoad'], {'pkg': 'vpl', 'version': '>= 2.6', 'c_args': '-DMFX_DEPRECATED_OFF'}],
+  ['libvvenc', ['vvenc/vvenc.h'], ['MFXLoad'], {'pkg': 'vpl', 'version': '>= 1.6.1'}],
   ['libx264', ['stdint.h', 'x264.h'], ['x264_encoder_encode'], {'pkg': 'x264'}],
   ['libx265', ['x265.h'], ['x265_api_get'], {'pkg': 'x265'}],
   ['libxcb', ['xcb/xcb.h'], ['xcb_connect'], {'pkg': 'xcb', 'version': '>= 1.4'}],
   ['libxcb_shm', ['xcb/shm.h'], ['xcb_shm_attach'], {'pkg': 'xcb-shm'}],
   ['libxcb_shape', ['xcb/shape.h'], ['xcb_shape_get_rectangles'], {'pkg': 'xcb-shape'}],
   ['libxcb_xfixes', ['xcb/xfixes.h'], ['xcb_xfixes_get_cursor_image'], {'pkg': 'xcb-xfixes'}],
+  ['libxeve', ['xeve.h'], ['xeve_encode'], {'pkg': 'xeve', 'version': '>= 0.5.1'}],
   ['libxml2', ['libxml2/libxml/xmlversion.h'], ['xmlCheckVersion'], {'pkg': 'libxml-2.0'}],
   ['libzimg', ['zimg.h'], ['zimg_get_api_version'], {'pkg': 'zimg', 'version': '>= 2.7.0'}],
   ['libzmq', ['zmq.h'], ['zmq_ctx_new'], {}],
@@ -986,7 +986,6 @@ check_pkg_config = [
   ['rockchip_mpp', ['rockchip/rk_mpi.h'], ['mpp_create'], {'version': '>= 1.3.7'}],
   ['sdl2', ['SDL_events.h'], ['SDL_PollEvent'], {'version': ['>= 2.0.1', '< 3.0.0']}],
   ['sndio', ['sndio.h'], ['sio_open'], {'pkg': 'sndio'}],
-  ['vapoursynth', ['VSScript.h'], ['vsscript_init'], {'pkg': 'vapoursynth-script', 'version': '>= 42'}],
   ['vulkan', ['vulkan/vulkan.h'], ['vkCreateInstance'], {'pkg': 'vulkan', 'version': '>= 1.3.277'}],
   ['xlib_x11', ['X11/Xlib.h'], ['XPending'], {'pkg': 'xlib'}],
   ['xlib_xext', ['X11/Xlib.h', 'X11/extensions/XShm.h'], ['XShmAttach'], {'pkg': 'xext'}],
@@ -1088,7 +1087,7 @@ check_components = [
   ['linux_fb_h', ['linux/fb.h'], [], []],
   ['lzma', ['lzma.h'], ['lzma_version_number'], ['lzma']],
   ['mbedtls', ['mbedtls/ssl.h'], ['mbedtls_ssl_init'], ['mbedtls', 'mbedx509', 'mbedcrypto']],
-  ['mediandk', ['stdint.h', 'media/NdkImage.h'], ['AImage_delete'], ['mediandk']],
+  ['mediandk', ['stdint.h', 'media/NdkMediaFormat.h'], ['AMediaFormat_new'], ['mediandk']],
   ['mmal', ['interface/mmal/mmal.h'], ['mmal_port_connect'], ['mmal_core', 'mmal_util', 'mmal_vc_client', 'bcm_host']],
   ['nanosleep', ['time.h'], ['nanosleep'], ['rt']],
   ['ole32', ['windows.h', 'objbase.h'], ['CoTaskMemFree'], ['ole32']],
@@ -1099,6 +1098,8 @@ check_components = [
   ['opencl', ['CL/cl.h'], ['clEnqueueNDRangeKernel'], ['OpenCL', disabler()]],
   ['opengl', ['GL/glx.h'], ['glXGetProcAddress'], ['GL']],
   ['opengl', ['windows.h'], ['wglGetProcAddress'], ['opengl32', 'gdi32']],
+  ['opengl', ['OpenGL/gl3.h'], ['glGetError'], [], {'frameworks': ['OpenGL']}],
+  ['opengl', ['ES2/gl.h'], ['glGetError'], [], {'frameworks': ['OpenGLES']}],
   ['openssl', ['openssl/ssl.h'], ['SSL_library_init'], ['ssl', 'crypto']],
   ['openssl', ['openssl/ssl.h'], ['SSL_library_init'], ['ssl32', 'eay32']],
   ['openssl', ['openssl/ssl.h'], ['SSL_library_init'], ['ssl', 'crypto', 'ws2_32', 'gdi32']],
@@ -1159,6 +1160,8 @@ check_header_funcs = [
   ['getenv', ['stdlib.h']],
   ['lstat', ['sys/stat.h']],
   ['getauxval', ['sys/auxv.h']],
+  ['elf_aux_info', ['sys/auxv.h']],
+  ['sysctlbyname', ['sys/sysctl.h']],
   ['GetProcessAffinityMask', ['windows.h']],
   ['GetProcessTimes', ['windows.h']],
   ['GetSystemTimeAsFileTime', ['windows.h']],
@@ -1173,8 +1176,6 @@ check_header_funcs = [
   ['MFCreateAlignedMemoryBuffer', ['mfapi.h'], {'link_with': ['mfplat', 'mfuuid', 'ole32', 'strmiids']}],
   ['CreateDIBSection', ['windows.h'], {'link_with': ['gdi32']}],
   ['InitializeSecurityContext', ['windows.h', 'security.h'], {'link_with': ['secur32'], 'c_args': ['-DSECURITY_WIN32']}],
-  ['atomic_cas_ptr', ['atomic.h']],
-  ['machine_rw_barrier', ['mbarrier.h'], {'funcs': ['__machine_rw_barrier']}],
   ['MemoryBarrier', ['windows.h']],
   ['posix_memalign', ['stdlib.h']],
   ['sem_timedwait', ['semaphore.h'], {'preconditions': ['pthreads'], 'extra_deps': ['thread_dep']}],
@@ -1206,11 +1207,11 @@ check_funcs = [
   ['strerror_r'],
   ['sysconf'],
   ['sysctl'],
+  ['tempnam'],
   ['usleep'],
   ['pthread_join', {'preconditions': ['pthreads'], 'extra_deps': ['thread_dep']}],
   ['pthread_create', {'preconditions': ['pthreads'], 'extra_deps': ['thread_dep']}],
   ['pthread_cancel', {'preconditions': ['pthreads'], 'extra_deps': ['thread_dep']}],
-  ['sync_val_compare_and_swap', {'funcs': ['__sync_val_compare_and_swap']}],
   ['gmtime_r'],
   ['localtime_r'],
 ]
@@ -1221,15 +1222,15 @@ if get_option('securetransport').allowed()
     ['securetransport', ['Security/SecureTransport.h', 'Security/Security.h'], ['SSLCreateContext'], [], {'frameworks': ['CoreFoundation', 'Security']}],
   ]
   check_funcs += [
-    ['SecIdentityCreate', {'c_args': ['-Wl,-framework,CoreFoundation', '-Wl,-framework,Security']}],
-    ['SecItemImport', {'c_args': ['-Wl,-framework,CoreFoundation', '-Wl,-framework,Security']}],
+    ['SecIdentityCreate', {'frameworks': ['CoreFoundation', 'Security']}],
+    ['SecItemImport', {'frameworks': ['CoreFoundation', 'Security']}],
   ]
 endif
 
 if get_option('videotoolbox').allowed()
   check_funcs += [
-    ['VTPixelTransferSessionCreate', {'c_args': ['-Wl,-framework,CoreFoundation', '-Wl,-framework,Security']}],
-    ['SecItemImport', {'c_args': ['-Wl,-framework,CoreFoundation', '-Wl,-framework,Security']}],
+    ['VTPixelTransferSessionCreate', {'frameworks': ['VideoToolbox']}],
+    ['VTPixelRotationSessionCreate', {'frameworks': ['VideoToolbox']}],
   ]
 
   check_components += [
@@ -1334,6 +1335,8 @@ check_headers = [
   ['dxgidebug.h'],
   ['dxva.h'],
   ['dxva2api.h', {'c_args': ['-D_WIN32_WINNT=0x0600']}],
+  ['linux/fb.h'],
+  ['linux/videodev2.h'],
   ['mftransform.h'],
   ['msa.h'],
   ['net/udplite.h'],
@@ -1405,6 +1408,8 @@ external_library_list = library_gpl_list + library_nonfree_list + library_versio
   'libjxl',
   'libklvanc',
   'libkvazaar',
+  'liblc3',
+  'liblcevc_dec',
   'libmodplug',
   'libmp3lame',
   'libmysofa',
@@ -1443,6 +1448,7 @@ external_library_list = library_gpl_list + library_nonfree_list + library_versio
   'libvmaf',
   'libvorbis',
   'libvpx',
+  'libvvenc',
   'libwebp',
   'libxevd',
   'libxeve',
@@ -1511,9 +1517,8 @@ subsystem_list = [
   'error_resilience',
   'faan',
   'fast_unaligned',
-  'fft',
+  'iamf',
   'lsp',
-  'mdct',
   'pixelutils',
   'network',
   'rdft',
@@ -1557,10 +1562,12 @@ config_extra = [
   'cbs_mpeg2',
   'cbs_vp8',
   'cbs_vp9',
+  'd3d12va_encode',
   'deflate_wrapper',
   'dirac_parse',
   'dnn',
-  'dovi_rpu',
+  'dovi_rpudec',
+  'dovi_rpuenc',
   'dvprofile',
   'exif',
   'faandct',
@@ -1591,6 +1598,7 @@ config_extra = [
   'inflate_wrapper',
   'intrax8',
   'iso_media',
+  'iso_writer',
   'ividsp',
   'jpegtables',
   'lgplv3',
@@ -1635,6 +1643,7 @@ config_extra = [
   'tpeldsp',
   'vaapi_1',
   'vaapi_encode',
+  'vulkan_encode',
   'vc1dsp',
   'videodsp',
   'vp3dsp',
@@ -1731,11 +1740,12 @@ check_compiles = [
   ['pragma_deprecated', [], 'int main(void) {_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\""); return 0; }'],
   ['const_nan', ['math.h'], 'struct { double d; } static const bar[] = { { NAN } };'],
   ['intrinsics_neon', ['arm_neon.h'], 'int16x8_t test = vdupq_n_s16(0);'],
+  ['intrinsics_sse2', ['emmintrin.h'], '__m128i test = _mm_setzero_si128();'],
 ]
 
 check_links = [
-  ['stdatomic', ['stdatomic.h'], 'int main(void) {atomic_int foo, bar = ATOMIC_VAR_INIT(-1); atomic_store(&foo, 0); foo += bar;}', {'link_with': ['atomic']}],
-  ['stdatomic', ['stdatomic.h'], 'int main(void) {atomic_int foo, bar = ATOMIC_VAR_INIT(-1); atomic_store(&foo, 0); foo += bar;}'],
+  ['stdatomic', ['stdatomic.h'], 'int main(void) {atomic_int foo, bar = -1; atomic_store(&foo, 0); foo += bar;}', {'link_with': ['atomic']}],
+  ['stdatomic', ['stdatomic.h'], 'int main(void) {atomic_int foo, bar = -1; atomic_store(&foo, 0); foo += bar;}'],
 ]
 
 v4l2m2m_formats = [
@@ -2273,8 +2283,8 @@ if conf.get('pthreads') == 0 and conf.get('w32threads') == 0 and conf.get('os2th
         #include <pthread.h>
         #include <pthread_np.h>
       '''
-      conf.set10('pthread_set_name_np', cc.has_function('pthread_set_name_np', prefix: thread_prefix, dependencies: thread_dep))
-      conf.set10('pthread_setname_np', cc.has_function('pthread_setname_np', prefix: thread_prefix, dependencies: thread_dep))
+    conf.set10('pthread_set_name_np', cc.has_function('pthread_set_name_np', prefix: thread_prefix, dependencies: thread_dep))
+    conf.set10('pthread_setname_np', cc.has_function('pthread_setname_np', prefix: thread_prefix, dependencies: thread_dep))
     endif
   endif
 endif
@@ -2348,25 +2358,39 @@ endif
 # Manual check for amf
 if conf.get('amf') == 1
   conf.set('amf', cc.links(cpp_cond.format('AMF/core/Version.h', 
-  '(AMF_VERSION_MAJOR << 48 | AMF_VERSION_MINOR << 32 | AMF_VERSION_RELEASE << 16 | AMF_VERSION_BUILD_NUM) >= 0x00010004001d0000'), name: 'AMF version'))
+  '(AMF_VERSION_MAJOR << 48 | AMF_VERSION_MINOR << 32 | AMF_VERSION_RELEASE << 16 | AMF_VERSION_BUILD_NUM) >= 0x0001000400210000'), name: 'AMF version'))
 endif
 
+# Manual patch for d3d12_encoder_feature
+conf.set10('d3d12_encoder_feature', cc.compiles('''#include <windows.h>
+#include <d3d12video.h>
+int main() {
+  D3D12_FEATURE_VIDEO feature = D3D12_FEATURE_VIDEO_ENCODER_CODEC;
+  D3D12_FEATURE_DATA_VIDEO_ENCODER_RESOURCE_REQUIREMENTS req;
+  (void)feature;
+  (void)req;
+  return 0;
+}
+''', name: 'Supports D3D12 encoder'))
+
 # Manual check for libmfx
-if conf.get('libmfx') == 1
+if conf.get('libmfx') == 1 and conf.get('libvpx') == 1
+  error('can not use libmfx and libvpl together')
+elif conf.get('libmfx') == 1
   if not cc.links(cpp_cond.format('mfx/mfxdefs.h', 'MFX_VERSION >= 1028 && MFX_VERSION < 2000'), name: 'libmfx version')
     error('libmfx version must be >= 1.28 and < 2.0')
-  else
-    warning('build FFmpeg against libmfx 1.x, obsolete features of libmfx such as OPAQUE memory,')
-    warning('multi-frame encode, user plugins and LA_EXT rate control mode are enabled')
   endif
   conf.set10('MFX_CODEC_VP9'.to_lower(), cc.has_header_symbol('mfxstructures.h', 'MFX_CODEC_VP9'))
+  warning('libmfx is deprecated. Please run meson setup with -Dlibmfx=disabled to use libvpl instead.')
+elif conf.get('libvpl') == 1
+  conf.set10('struct_mfxConfigInterface'.to_lower(), cc.has_header_symbol('vpl/mfxvideo.h', 'struct mfxConfigInterface', prefix: '#include <vpl/mfxdefs.h>'))
 endif
 
 # Manual check for libx264
 if conf.get('libx264') == 1
   if is_msvc
-    if not cc.links(cpp_cond.format('x264.h', 'X264_BUILD >= 122'), name: 'libx264 version')
-      warning('libx264 version must be >= 1.22')
+    if not cc.links(cpp_cond.format('x264.h', 'X264_BUILD >= 155'), name: 'libx264 version')
+      warning('libx264 version must be >= 1.55')
       conf.set('libx264', 0)
     endif
   else
@@ -2377,14 +2401,6 @@ if conf.get('libx264') == 1
   endif
   conf.set10('libx264_hdr10', cc.links(cpp_cond.format('x264.h', 'X264_BUILD >= 163'), name: 'libx264 version'))
   conf.set10('libx262', cc.links(cpp_cond.format('x264.h', 'X264_MPEG2'), name: 'supports MPEG2 inside x264'))
-endif
-
-if conf.get('libmfx') == 1 and conf.get('libvpl') == 1
-  error('can not use libmfx and libvpl together')
-endif
-
-if conf.get('opengl') == 1 and not cc.has_header('GL/glext.h')
-  conf.set('opengl', 0)
 endif
 
 if conf.get('libx265') == 1
@@ -2423,6 +2439,23 @@ if conf.get('libass') == 1
       )
     )
   endif
+endif
+
+conf.set10('struct_v4l2_frmivalenum_discrete', cc.compiles('''
+  #include <linux/videodev2.h>
+  int main() {
+    struct v4l2_frmsizeenum vfse; vfse.discrete.width = 0;
+    return 0;
+  }
+''', name: 'supports v4l2 framesize enumeration ioctl'))
+
+conf.set10('posix_ioctl', cc.compiles('''
+  #include <sys/ioctl.h>
+  int main() { int ioctl(int, int, ...); return 0; }
+''', name: 'Supports ioctl(3P)'))
+
+if get_option('vapoursynth').allowed()
+  conf.set10('vapoursynth', cc.has_header('vapoursynth/VSScript4.h') and cc.has_header('vapoursynth/VapourSynth4.h'))
 endif
 
 foreach req : ['xlib_x11', 'xlib_xext', 'xlib_xv']
@@ -3115,18 +3148,21 @@ foreach thing : things_to_print
 endforeach
 
 if conf.get('stdatomic') == 0
-  if conf.get('atomics_gcc', 0) == 1
-    common_incs += [include_directories('compat/atomics/gcc')]
-  elif conf.get('atomics_win32', 0) == 1
+  if conf.get('atomics_win32', 0) == 1
     common_incs += [include_directories('compat/atomics/win32')]
-  elif conf.get('pthreads', 0) == 1
-    compat_objs += files('compat/atomics/pthread/stdatomic.c')
-    common_incs += [include_directories('compat/atomics/pthread')]
   elif conf.get('threads', 0) == 1
     error('Threading is enabled, but no atomics are available')
   else
     common_incs += [include_directories('compat/atomics/dummy')]
   endif
+endif
+
+if not cc.compiles('''#include <stdbit.h>
+#include <assert.h>
+static_assert(__STDC_VERSION_STDBIT_H__ >= 202311L, "Compiler lacks stdbit.h")
+int main() { return 0; }
+''', name: 'Compiler has stdbit.h')
+  common_incs += [include_directories('compat/stdbit')]
 endif
 
 add_project_arguments(project_c_args, language: 'c')

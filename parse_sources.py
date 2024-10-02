@@ -45,7 +45,7 @@ SOURCE_TYPE_DIRS = {'test-prog': 'tests'}
 
 
 def add_source(f, source: str, prefix='', suffix=''):
-    if not source.startswith(('opencl/', 'metal/', 'cuda/', '../', 'h26x/')):
+    if not source.startswith(('opencl/', 'metal/', 'cuda/', '../', 'h26x/', 'hevc/')):
         source = source.split('/', maxsplit=1)[-1]
     f.write("%s'%s'%s" % (prefix, source, suffix))
 
@@ -265,7 +265,6 @@ def make_to_meson(path):
                                     tmpf = '../' + src_path.relative_to(meson_path).as_posix()
                             elif i == 1:
                                 tmpf = src_path.relative_to(meson_path).as_posix()
-                                print(tmpf)
                             ifiles.append(tmpf)
                             add_language(languages_map, ext, label)
                             break
@@ -422,9 +421,15 @@ paths = [
         'libswscale/x86',
         'libavcodec',
         'libavcodec/bsf',
+        'libavcodec/aac',
         'libavcodec/aarch64',
+        'libavcodec/aarch64/vvc',
         'libavcodec/arm',
+        'libavcodec/bsf',
+        'libavcodec/hevc',
+        # 'libavcodec/h26x',
         'libavcodec/neon',
+        'libavcodec/opus',
         'libavcodec/x86',
         'libavcodec/x86/vvc',
         'libavcodec/vvc',

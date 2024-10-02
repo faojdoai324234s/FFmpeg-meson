@@ -13,6 +13,7 @@ libavfilter_x86_optional_sources = {
   'fspp_filter' : files('vf_fspp_init.c'),
   'gblur_filter' : files('vf_gblur_init.c'),
   'gradfun_filter' : files('vf_gradfun_init.c'),
+  'haldclut_filter' : files('vf_lut3d_init.c'),
   'hflip_filter' : files('vf_hflip_init.c'),
   'hqdn3d_filter' : files('vf_hqdn3d_init.c'),
   'idet_filter' : files('vf_idet_init.c'),
@@ -30,6 +31,7 @@ libavfilter_x86_optional_sources = {
   'removegrain_filter' : files('vf_removegrain_init.c'),
   'scene_sad' : files('scene_sad_init.c'),
   'showcqt_filter' : files('avf_showcqt_init.c'),
+  'sobel_filter' : files('vf_convolution_init.c'),
   'spp_filter' : files('vf_spp.c'),
   'ssim_filter' : files('vf_ssim_init.c'),
   'stereo3d_filter' : files('vf_stereo3d_init.c'),
@@ -40,6 +42,7 @@ libavfilter_x86_optional_sources = {
   'v360_filter' : files('vf_v360_init.c'),
   'volume_filter' : files('af_volume_init.c'),
   'w3fdif_filter' : files('vf_w3fdif_init.c'),
+  'xpsnr_filter' : files('vf_xpsnr_init.c'),
   'yadif_filter' : files('vf_yadif_init.c'),
 }
 
@@ -56,6 +59,7 @@ libavfilter_x86_x86asm_optional_sources = {
   'fspp_filter' : files('vf_fspp.asm'),
   'gblur_filter' : files('vf_gblur.asm'),
   'gradfun_filter' : files('vf_gradfun.asm'),
+  'haldclut_filter' : [], # MANUAL
   'hflip_filter' : files('vf_hflip.asm'),
   'hqdn3d_filter' : files('vf_hqdn3d.asm'),
   'idet_filter' : files('vf_idet.asm'),
@@ -72,6 +76,7 @@ libavfilter_x86_x86asm_optional_sources = {
   'removegrain_filter' : files('vf_removegrain.asm'),
   'scene_sad' : files('scene_sad.asm'),
   'showcqt_filter' : files('avf_showcqt.asm'),
+  'sobel_filter' : files('vf_convolution.asm'),
   'ssim_filter' : files('vf_ssim.asm'),
   'stereo3d_filter' : files('vf_stereo3d.asm'),
   'tblend_filter' : files('vf_blend.asm'),
@@ -121,6 +126,9 @@ if conf.get('x86_64', 0) == 1
   # panic: ../libavcodec/x86/simple_idct10.asm: assertion cv8_state.source_files != NULL failed at output/codeview.c:512
   libavfilter_x86_x86asm_optional_sources += {
     'atadenoise_filter': libavfilter_x86_x86asm_optional_sources ['atadenoise_filter'] + files('vf_atadenoise.asm'),
+  }
+  libavfilter_x86_x86asm_optional_sources += {
+    'haldclut_filter': libavfilter_x86_x86asm_optional_sources ['haldclut_filter'] + files('vf_lut3d.asm'),
   }
   libavfilter_x86_x86asm_optional_sources += {
     'nlmeans_filter': libavfilter_x86_x86asm_optional_sources ['nlmeans_filter'] + files('vf_nlmeans.asm'),

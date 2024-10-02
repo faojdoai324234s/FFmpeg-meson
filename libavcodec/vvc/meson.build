@@ -1,5 +1,5 @@
 libavcodec_vvc_optional_sources = {
-  'vvc_decoder' : files('vvcdec.c','vvcdsp.c','vvc_cabac.c','vvc_ctu.c','vvc_data.c','vvc_filter.c','vvc_inter.c','vvc_intra.c','vvc_intra_utils.c','vvc_itx_1d.c','vvc_mvs.c','vvc_ps.c','vvc_refs.c','vvc_thread.c'),
+  'vvc_decoder' : files('dec.c','dsp.c','cabac.c','ctu.c','data.c','filter.c','inter.c','intra.c','intra_utils.c','itx_1d.c','mvs.c','ps.c','refs.c','thread.c'),
 }
 
 libavcodec_vvc_x86asm_optional_sources = {

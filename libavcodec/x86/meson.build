@@ -31,7 +31,7 @@ libavcodec_x86_optional_sources = {
   'h264dsp' : files('h264dsp_init.c'),
   'h264pred' : files('h264_intrapred_init.c'),
   'h264qpel' : files('h264_qpel.c'),
-  'hevc_decoder' : files('hevcdsp_init.c','h26x/h2656dsp.c'),
+  'hevc_decoder' : files('hevcdsp_init.c'), # MANUAL
   'hpeldsp' : files('hpeldsp_init.c'),
   'huffyuvdsp' : files('huffyuvdsp_init.c'),
   'huffyuvencdsp' : files('huffyuvencdsp_init.c'),
@@ -53,7 +53,6 @@ libavcodec_x86_optional_sources = {
   'pixblockdsp' : files('pixblockdsp_init.c'),
   'png_decoder' : files('pngdsp_init.c'),
   'prores_decoder' : files('proresdsp_init.c'),
-  'prores_lgpl_decoder' : files('proresdsp_init.c'),
   'qpeldsp' : files('qpeldsp_init.c'),
   'rv34dsp' : files('rv34dsp_init.c'),
   'rv40_decoder' : files('rv40dsp_init.c'),
@@ -124,7 +123,6 @@ libavcodec_x86_x86asm_optional_sources = {
   'pixblockdsp' : files('pixblockdsp.asm'),
   'png_decoder' : files('pngdsp.asm'),
   'prores_decoder' : [], # MANUAL
-  'prores_lgpl_decoder' : [], # MANUAL
   'qpeldsp' : files('qpeldsp.asm','fpel.asm','qpel.asm'),
   'rv34dsp' : files('rv34dsp.asm'),
   'rv40_decoder' : files('rv40dsp.asm'),
@@ -196,16 +194,26 @@ elif conf.get('x86_64', 0) == 1
   # panic: ../libavcodec/x86/simple_idct10.asm: assertion cv8_state.source_files != NULL failed at output/codeview.c:512
   libavcodec_x86_x86asm_optional_sources += libavcodec_x86_vvc_x86asm_optional_sources
   libavcodec_x86_x86asm_optional_sources += {
-    'hevc_decoder': libavcodec_x86_x86asm_optional_sources ['hevc_decoder'] + files('h26x/h2656_inter.asm'),
     'idctdsp': libavcodec_x86_x86asm_optional_sources ['idctdsp'] + files('simple_idct10.asm'),
     'mlp_decoder': libavcodec_x86_x86asm_optional_sources ['mlp_decoder'] + files('mlpdsp.asm'),
     'cfhd_encoder': libavcodec_x86_x86asm_optional_sources ['cfhd_encoder'] + files('cfhdencdsp.asm'),
     'prores_decoder': libavcodec_x86_x86asm_optional_sources ['prores_decoder'] + files('proresdsp.asm'),
-    'prores_lgpl_decoder': libavcodec_x86_x86asm_optional_sources ['prores_lgpl_decoder'] + files('proresdsp.asm'),
     'truehd_decoder': libavcodec_x86_x86asm_optional_sources ['truehd_decoder'] + files('mlpdsp.asm'),
-    'vvc_decoder': libavcodec_x86_x86asm_optional_sources ['vvc_decoder'] + files('h26x/h2656_inter.asm'),
   }
-  libavcodec_optional_sources += {
-    'vvc_decoder': libavcodec_optional_sources ['vvc_decoder'] + files('h26x/h2656dsp.c')
-  }
+
+  if conf.get('hevc_decoder') == 1
+    libavcodec_x86_optional_sources += {
+      'hevc_decoder': libavcodec_x86_optional_sources ['hevc_decoder'] + files('h26x/h2656dsp.c')
+    }
+    libavcodec_x86_x86asm_optional_sources += {
+      'hevc_decoder': libavcodec_x86_x86asm_optional_sources ['hevc_decoder'] + files('h26x/h2656_inter.asm')
+    }
+  elif conf.get('vvc_decoder') == 1
+    libavcodec_x86_optional_sources += {
+      'vvc_decoder': libavcodec_x86_optional_sources ['vvc_decoder'] + files('h26x/h2656dsp.c')
+    }
+    libavcodec_x86_x86asm_optional_sources += {
+      'vvc_decoder': libavcodec_x86_x86asm_optional_sources ['vvc_decoder'] + files('h26x/h2656_inter.asm')
+    }
+  endif
 endif

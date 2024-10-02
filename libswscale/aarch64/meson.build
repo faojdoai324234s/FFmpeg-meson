@@ -21,8 +21,11 @@ libswscale_aarch64_armv8_optional_sources = {
 
 libswscale_aarch64_neon_sources = files(
   'hscale.S',
+  'input.S',
   'output.S',
+  'range_convert_neon.S',
   'rgb2rgb_neon.S',
+  'swscale_unscaled_neon.S',
   'yuv2rgb_neon.S',
 )
 

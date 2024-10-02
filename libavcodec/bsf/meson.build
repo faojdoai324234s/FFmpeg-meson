@@ -5,6 +5,7 @@ libavcodec_bsf_optional_sources = {
   'av1_metadata_bsf' : files('av1_metadata.c'),
   'chomp_bsf' : files('chomp.c'),
   'dca_core_bsf' : files('dca_core.c'),
+  'dovi_rpu_bsf' : files('dovi_rpu.c'),
   'dts2pts_bsf' : files('dts2pts.c'),
   'dump_extradata_bsf' : files('dump_extradata.c'),
   'dv_error_marker_bsf' : files('dv_error_marker.c'),
@@ -22,7 +23,6 @@ libavcodec_bsf_optional_sources = {
   'media100_to_mjpegb_bsf' : files('media100_to_mjpegb.c'),
   'mjpeg2jpeg_bsf' : files('mjpeg2jpeg.c'),
   'mjpega_dump_header_bsf' : files('mjpega_dump_header.c'),
-  # MANUAL FIXME: ff_text2movsub_bsf needs to be moved out of this file
   'mov2textsub_bsf' : files('movsub.c'),
   'mpeg2_metadata_bsf' : files('mpeg2_metadata.c'),
   'mpeg4_unpack_bframes_bsf' : files('mpeg4_unpack_bframes.c'),
@@ -35,7 +35,6 @@ libavcodec_bsf_optional_sources = {
   'remove_extradata_bsf' : files('remove_extradata.c'),
   'setts_bsf' : files('setts.c'),
   'showinfo_bsf' : files('showinfo.c'),
-  # MANUAL FIXME: ff_text2movsub_bsf needs to be moved out of this file
   'text2movsub_bsf' : files('movsub.c'),
   'trace_headers_bsf' : files('trace_headers.c'),
   'truehd_core_bsf' : files('truehd_core.c'),

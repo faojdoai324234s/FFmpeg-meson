@@ -28,7 +28,7 @@ def build_graph(pattern):
                 label, selector = l.split('=')
 
                 if '$' in label or '$' in selector:
-                    print ('Warning: skip line: %s', l)
+                    print('Warning: skip line: %s' % l)
                     continue
 
                 label = label.rsplit('_', 1 + pattern.count('_'))[0].lower()

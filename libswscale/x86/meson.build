@@ -13,6 +13,7 @@ libswscale_x86_x86asm_sources = files(
   'output.asm',
   'scale.asm',
   'scale_avx2.asm',
+  'range_convert.asm',
   'rgb_2_rgb.asm',
   'yuv_2_rgb.asm',
   'yuv2yuvX.asm',
