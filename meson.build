@@ -1229,13 +1229,10 @@ if get_option('securetransport').allowed()
 endif
 
 if get_option('videotoolbox').allowed()
-  check_funcs += [
-    ['VTPixelTransferSessionCreate', {'frameworks': ['VideoToolbox']}],
-    ['VTPixelRotationSessionCreate', {'frameworks': ['VideoToolbox']}],
-  ]
-
-  check_components += [
-    ['videotoolbox', ['VideoToolbox/VideoToolbox.h', 'VideoToolbox/VTCompressionSession.h'], ['VTPixelTransferSessionCreate', 'VTPixelRotationSessionCreate', 'VTCompressionSessionPrepareToEncodeFrames'], [], {'frameworks': ['VideoToolbox']}],
+  check_header_funcs += [
+    ['VTPixelTransferSessionCreate', ['VideoToolbox/VideoToolbox.h'], {'c_args': ['-Werror=unguarded-availability-new'], 'frameworks': ['VideoToolbox']}],
+    ['VTPixelRotationSessionCreate', ['VideoToolbox/VideoToolbox.h'], {'c_args': ['-Werror=unguarded-availability-new'], 'frameworks': ['VideoToolbox']}],
+    ['VTCompressionSessionPrepareToEncodeFrames', ['VideoToolbox/VTCompressionSession.h'], {'c_args': ['-Werror=unguarded-availability-new'], 'frameworks': ['VideoToolbox']}],
   ]
 endif
 
