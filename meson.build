@@ -559,6 +559,7 @@ conf.set10('optimizations', get_option('optimization') != '0')
 conf.set10('runtime_cpudetect', true)
 conf.set10('safe_bitstream_reader', true)
 conf.set10('swscale_alpha', true)
+assert_level = get_option('assert_level')
 
 if inline_asm.allowed()
   conf.set10('inline_asm',
@@ -3236,6 +3237,9 @@ final_conf.set_quoted('SLIBSUF', host_machine.system() == 'windows' ? '.dll' : '
 final_conf.set('SWS_MAX_FILTER_SIZE', 256)
 final_conf.set('EXTERN_ASM', extern_prefix)
 final_conf.set_quoted('EXTERN_PREFIX', extern_prefix)
+if assert_level > 0
+  final_conf.set10('ASSERT_LEVEL', assert_level)
+endif
 
 if not get_option('nonfree').disabled()
   license = 'nonfree and unredistributable'

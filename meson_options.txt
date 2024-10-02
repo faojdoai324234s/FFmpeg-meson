@@ -2484,3 +2484,4 @@ option('w32threads', type: 'feature', value: 'auto', description: 'Enable Win32 
 option('os2threads', type: 'feature', value: 'disabled', description: 'Enable OS/2 support')
 option('tests', type : 'feature', value : 'auto', description : 'Build tests', yield : true)
 option('large_tests', type : 'feature', value : 'disabled')
+option('assert_level', type: 'integer', min: 0, max: 2, value: 0)
