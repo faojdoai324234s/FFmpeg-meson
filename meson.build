@@ -2283,9 +2283,13 @@ if conf.get('pthreads') == 0 and conf.get('w32threads') == 0 and conf.get('os2th
         #include <pthread.h>
         #include <pthread_np.h>
       '''
+    else
+      thread_prefix = '''
+        #include <pthread.h>
+      '''
+    endif
     conf.set10('pthread_set_name_np', cc.has_function('pthread_set_name_np', prefix: thread_prefix, dependencies: thread_dep))
     conf.set10('pthread_setname_np', cc.has_function('pthread_setname_np', prefix: thread_prefix, dependencies: thread_dep))
-    endif
   endif
 endif
 
