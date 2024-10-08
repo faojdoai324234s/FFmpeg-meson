@@ -2770,7 +2770,6 @@ endforeach
 foreach check: x86asm_checks
   f = configure_file(
     command: [python3, '-c', 'import sys; print(sys.argv[1])', '@0@'.format(check[0])],
-    input: 'configure',
     output: '@0@.asm'.format(check[1]),
     capture: true,
   )
@@ -2842,13 +2841,11 @@ foreach check : asm_as_checks
   if can_run_asm_checks
     f = configure_file(
       command: [python3, '-c', 'import sys; print(sys.argv[1])', '@0@'.format(check[0])],
-      input: 'configure',
       output: '@0@.S'.format(check[1]),
       capture: true,
     )
     conf.set10(check[1], cc.compiles(
       f,
-      args: ['-x', 'assembler'],
       name: check[1]
     ))
   else
@@ -2867,13 +2864,11 @@ if conf.get('as_arch_directive', 0) == 1
   foreach level : ['armv8.2-a', 'armv8.4-a', 'armv8.6-a']
     f = configure_file(
       command: [python3, '-c', 'import sys; print(sys.argv[1])', '.arch @0@'.format(level)],
-      input: 'configure',
       output: '@0@.S'.format(check[1]),
       capture: true,
     )
     conf.set10('tested_arch_level', cc.compiles(
       f,
-      args: ['-x', 'assembler'],
       name: 'assembler supports @0@'.format(level)
     ))
     if conf.get10('tested_arch_level') == 1
@@ -2889,13 +2884,11 @@ if conf.get('as_arch_directive', 0) == 1
   # effect right away.
   f = configure_file(
     command: [python3, '-c', 'import sys; print(sys.argv[1])', '.arch @0@+crc'.format(level)],
-    input: 'configure',
     output: '@0@.S'.format(check[1]),
     capture: true,
   )
   conf.set10('tested_arch_level', cc.compiles(
     f,
-    args: ['-x', 'assembler'],
     name: 'assembler supports @0@ with the CRC extension'.format(level)
   ))
   if conf.get10('tested_arch_level') == 1
