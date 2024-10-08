@@ -493,6 +493,8 @@ atomics_list = [
 
 toolchain_features = [
   'as_arch_directive',
+  'as_archext_dotprod_directive',
+  'as_archext_i8mm_directive',
   'as_dn_directive',
   'as_fpu_directive',
   'as_func',
@@ -2456,6 +2458,7 @@ extern_prefix = cc.symbols_have_underscore_prefix() ? '_' : ''
 asm_insn_checks = []
 
 asm_as_checks = []
+asm_arch_ext_checks = []
 
 if host_machine.system() == 'windows'
   asm_format = conf.get('x86_64') == 1 ? 'win64' : 'win32'
@@ -2613,8 +2616,13 @@ elif conf.get('aarch64') == 1
     ['prfm   pldl1strm, [x0]', 'armv8'],
     ['ext   v0.8B, v0.8B, v1.8B, #1', 'neon'],
     ['fmadd d0,    d0,    d1,    d2', 'vfp'],
+  ]
+  asm_arch_ext_checks += [
     ['udot v0.4s, v0.16b, v0.16b', 'dotprod'],
     ['usdot v0.4s, v0.16b, v0.16b', 'i8mm'],
+  ]
+  asm_as_checks += [
+    ['.arch armv8-a', 'as_arch_directive'],
   ]
 elif conf.get('arm') == 1
   if cc.has_argument('-mfp16-format=ieee')
@@ -2762,6 +2770,15 @@ foreach check : asm_insn_checks
   ]
 endforeach
 
+asm_archext_list = []
+foreach check : asm_arch_ext_checks
+  asm_inline_checks += [
+    ['"@0@"'.format(check[0]), '@0@_inline'.format(check[1])]
+  ]
+  # Separate list of extensions that are handled via .arch_extension
+  asm_archext_list += check[1]
+endforeach
+
 foreach check: asm_inline_checks
   if conf.get('inline_asm') == 1
     result = cc.compiles(
@@ -2819,7 +2836,10 @@ foreach check : asm_as_checks
   endif
 endforeach
 
-if conf.get('as_arch_directive', 0) == 1
+as_arch_str = ''
+as_arch_level = ''
+if conf.get('as_arch_directive', 0) == 1 and conf.get('aarch64', 0) == 1
+  as_arch_level = 'armv8-a'
   # Check for higher .arch levels. We only need armv8.2-a in order to
   # enable the extensions we want below - we primarily want to control
   # them via .arch_extension. However:
@@ -2830,14 +2850,13 @@ if conf.get('as_arch_directive', 0) == 1
   foreach level : ['armv8.2-a', 'armv8.4-a', 'armv8.6-a']
     f = configure_file(
       command: [python3, '-c', 'import sys; print(sys.argv[1])', '.arch @0@'.format(level)],
-      output: '@0@.S'.format(check[1]),
+      output: '@0@.S'.format(level),
       capture: true,
     )
-    conf.set10('tested_arch_level', cc.compiles(
+    if cc.compiles(
       f,
       name: 'assembler supports @0@'.format(level)
-    ))
-    if conf.get10('tested_arch_level') == 1
+    )
       as_arch_level = level
     endif
   endforeach
@@ -2849,18 +2868,56 @@ if conf.get('as_arch_directive', 0) == 1
   # feature to make the .arch directive behave as expected and take
   # effect right away.
   f = configure_file(
-    command: [python3, '-c', 'import sys; print(sys.argv[1])', '.arch @0@+crc'.format(level)],
-    output: '@0@.S'.format(check[1]),
+    command: [python3, '-c', 'import sys; print(sys.argv[1])', '.arch @0@+crc'.format(as_arch_level)],
+    output: '@0@.S'.format('arch_crc'),
     capture: true,
   )
-  conf.set10('tested_arch_level', cc.compiles(
+  if cc.compiles(
     f,
-    name: 'assembler supports @0@ with the CRC extension'.format(level)
-  ))
-  if conf.get10('tested_arch_level') == 1
-    as_arch_level = level
+    name: 'assembler supports @0@ with the CRC extension'.format(as_arch_level)
+  )
+    as_arch_level = as_arch_level + '+crc'
   endif
+  as_arch_str = '.arch ' + as_arch_level + '\n'
 endif
+
+foreach check : asm_arch_ext_checks
+  if can_run_asm_checks
+    code = as_arch_str
+    arch_ext_str = '.arch_extension ' + check[1] + '\n'
+    code += arch_ext_str
+    f = configure_file(
+      command: [python3, '-c', 'import sys; print(sys.argv[1])', '@0@'.format(code)],
+      output: '@0@_archext.S'.format(check[1]),
+      capture: true,
+    )
+    archext_supported = cc.compiles(
+      f,
+      name: 'arch_extension_' + check[1]
+    )
+    conf.set10('as_archext_' + check[1] + '_directive', archext_supported)
+
+    code = as_arch_str
+    if archext_supported
+      code += arch_ext_str
+    endif
+    code += check[0] + '\n'
+    f = configure_file(
+      command: [python3, '-c', 'import sys; print(sys.argv[1])', '@0@'.format(code)],
+      output: '@0@.S'.format(check[1]),
+      capture: true,
+    )
+    conf.set10(check[1] + '_external', false)
+    conf.set10(check[1], cc.compiles(
+      f,
+      name: check[1]
+    ))
+  else
+    conf.set10('as_archext_' + check[1] + '_directive', false)
+    conf.set10(check[1] + '_external', false)
+    conf.set10(check[1], false)
+  endif
+endforeach
 
 if conf.get('x86') == 1
   conf.set10('ebx_available', conf.get('ebx_available_1') == 1 and conf.get('ebx_available_2') == 1)
@@ -2876,6 +2933,10 @@ arm_skip_checks = conf.get('arm', 0) == 1 and (host_machine.system() == 'linux' 
 # That's apart from the upstream's linux/android check
 if not arm_skip_checks or not can_run_asm_checks
   foreach ext : arch_ext_list_arm
+    if ext in asm_archext_list
+      # Skip the usual inline || external -> unsuffixed for these extensions.
+      continue
+    endif
     inline = '@0@_inline'.format(ext)
     external = '@0@_external'.format(ext)
     conf.set10(ext, conf.get(inline, 0) == 1 or conf.get(external, 0) == 1)
@@ -3237,6 +3298,10 @@ foreach have: have_list
   endif
   final_conf.set('HAVE_@0@'.format(have.to_upper()), conf.get(have.to_lower()))
 endforeach
+
+if conf.get('aarch64', 0) == 1
+  final_conf.set('AS_ARCH_LEVEL', as_arch_level)
+endif
 
 foreach config: config_list + config_extra
   final_conf.set('CONFIG_@0@'.format(config.to_upper()), conf.get(config.to_lower()))
