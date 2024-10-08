@@ -2672,7 +2672,7 @@ if (conf.get('arm', 0) == 1 or conf.get('aarch64', 0) == 1) and cc.get_id() != '
   ]
 endif
 
-can_run_asm_checks = false
+can_run_asm_checks = meson.version().version_compare('>=1.2.0')
 
 foreach check : asm_as_checks
   # It is possible to run compile checks on generated files, however,
