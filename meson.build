@@ -2711,7 +2711,7 @@ elif conf.get('arm') == 1
   ]
 
   asm_as_checks += [
-    ['.arch armv8-a', 'as_arch_directive'],
+    ['.arch armv7-a', 'as_arch_directive'],
     ['ra .dn d0.i16', 'as_dn_directive'],
     ['.fpu neon', 'as_fpu_directive']
   ]
