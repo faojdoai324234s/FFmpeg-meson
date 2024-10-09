@@ -2649,7 +2649,6 @@ elif conf.get('aarch64') == 1
   asm_insn_checks += [
     ['prfm   pldl1strm, [x0]', 'armv8'],
     ['ext   v0.8B, v0.8B, v1.8B, #1', 'neon'],
-    ['fmadd d0,    d0,    d1,    d2', 'vfp'],
   ]
   asm_arch_ext_checks += [
     ['udot v0.4s, v0.16b, v0.16b', 'dotprod'],
@@ -3804,7 +3803,6 @@ endif
 if conf.get('aarch64') == 1
   summary({
     'NEON': conf.get('neon').is_odd(),
-    'VFP': conf.get('vfp').is_odd(),
     'DOTPROD': conf.get('dotprod').is_odd(),
     'I8MM': conf.get('i8mm').is_odd(),
   }, section: 'Arm64', bool_yn: true)
