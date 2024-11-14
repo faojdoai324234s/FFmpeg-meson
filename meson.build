@@ -1839,6 +1839,9 @@ foreach feature : arch_features
   conf.set10(name, have)
 endforeach
 
+# override_options applies to all targets
+global_overrides = []
+
 if cc.get_id() == 'clang'
   if conf.get('x86_32') == 1
     # Clang doesn't support maintaining alignment without assuming the
@@ -1876,6 +1879,19 @@ elif cc.get_id() == 'msvc'
     project_c_args += cc.get_supported_arguments([
       '-Oy-'
     ])
+  endif
+  # In a couple of places there's code like 'if(CONFIG_something) { ... }'.
+  # On MSVC, with optimizations disabled, the supposedly-disabled blocks always
+  # generate code, including references to functions which are not available,
+  # causing link errors.
+  # In other words, optimization is always required to correctly build things -
+  # so enforce optimization in all cases.
+  # (Also note that MSVC doesn't know "levels of optimization" as such, but only
+  # "optimize for size" (1) and "optimize for speed" (2) modes - so might as well
+  # pick '2'.)
+  optimization = get_option('optimization')
+  if optimization in ['', '0', 'g', 'plain']
+    global_overrides += ['optimization=2']
   endif
 endif
 
@@ -3575,7 +3591,8 @@ foreach built_lib : built_libs
       c_args: c_args,
       pic: conf.get('pic') == 1,
       implicit_include_directories : false,
-      install: false
+      install: false,
+      override_options: global_overrides,
     )
     special_objects = special_static_lib.extract_all_objects(recursive: true)
   endif
@@ -3589,6 +3606,7 @@ foreach built_lib : built_libs
     c_args: c_args,
     pic: conf.get('pic') == 1,
     implicit_include_directories : false,
+    override_options: global_overrides,
   )
 
   vs_module_def = custom_target('@0@-def'.format(built_lib[0]),
@@ -3612,6 +3630,7 @@ foreach built_lib : built_libs
     pic: conf.get('pic') == 1,
     vs_module_defs: vs_module_def,
     implicit_include_directories : false,
+    override_options: global_overrides,
     install: true,
   )
 
@@ -3648,7 +3667,8 @@ foreach built_lib : built_libs
         link_args: static_link_args,
         link_with: [static_lib] + link_with,
         implicit_include_directories : false,
-        pie: get_option('b_pie') and (conf.get('pic') == 1)
+        pie: get_option('b_pie') and (conf.get('pic') == 1),
+        override_options: global_overrides,
       )
 
       test('@0@_@1@'.format(built_lib[0], test_name), exe,
@@ -3699,7 +3719,8 @@ foreach built_exe : built_exe_list
     dependencies: deps,
     include_directories: common_incs,
     implicit_include_directories : false,
-    pie: get_option('b_pie') and (conf.get('pic') == 1)
+    pie: get_option('b_pie') and (conf.get('pic') == 1),
+    override_options: global_overrides,
   )
 
   set_variable('@0@_exe'.format(built_exe[0]), exe)
