@@ -3398,7 +3398,7 @@ foreach built_lib : built_libs
       '@0@res.rc'.format(built_lib[0]),
       input : ['lib@0@/@0@res.rc'.format(built_lib[0])],
       output : ['@PLAINNAME@'],
-      command : [rc, '@INPUT@', meson.current_build_dir()],
+      command : [rc, '@INPUT@'],
       capture: true
     )
     sources += windows.compile_resources(
