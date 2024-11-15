@@ -3368,9 +3368,9 @@ config_components_h = configure_file(
   configuration: components_conf,
 )
 
-rc = find_program('rc_workaround.py', required: host_machine.system() == 'windows')
-
 build_tests = get_option('tests').allowed() and meson.can_run_host_binaries()
+
+fs = import('fs')
 
 foreach built_lib : built_libs
   sources = get_variable('lib@0@_sources'.format(built_lib[0])) + [ffversion_h]
@@ -3394,13 +3394,7 @@ foreach built_lib : built_libs
     # is the config.h of the *root* project, instead of our config.h.
     # This is because -I folder take effect *after* the .rc
     # file's directory, and *after* Ninja's build directory.
-    rc_tgt = custom_target(
-      '@0@res.rc'.format(built_lib[0]),
-      input : ['lib@0@/@0@res.rc'.format(built_lib[0])],
-      output : ['@PLAINNAME@'],
-      command : [rc, '@INPUT@'],
-      capture: true
-    )
+    rc_tgt = fs.copyfile('lib@0@/@0@res.rc'.format(built_lib[0]), '@0@res.rc'.format(built_lib[0]))
     sources += windows.compile_resources(
       rc_tgt,
       include_directories: ffmpeg_toplevel_inc,
