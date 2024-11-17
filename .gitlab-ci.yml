@@ -163,6 +163,14 @@ vs2019 no-optimization debug:
     ARCH: 'amd64'
     MESON_ARGS: '--optimization=0 --debug'
 
+# VS 2019 with a number of features disabled, as they might be by consumers that only need a subset of ffmpeg's features.
+# Also verifies that the ffmpeg build is useable even with "debug build" settings
+vs2019 no-optimization debug feature-customization:
+  extends: '.build windows'
+  variables:
+    ARCH: 'amd64'
+    MESON_ARGS: '--optimization=0 --debug -D encoders=disabled -D muxers=disabled -D programs=enabled -D tests=disabled -D avdevice=disabled'
+
 vs2019 x86:
   extends: '.build windows'
   stage: 'build'
