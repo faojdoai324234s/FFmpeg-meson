@@ -3561,14 +3561,6 @@ foreach built_lib : built_libs
     '-Wl,-Bsymbolic'
   ])
 
-  static_link_args = []
-
-  if is_msvc and (get_option('buildtype') == 'debug' or get_option('optimization') == '0')
-    message('Applying MSVC link workaround for Debug mode and static libraries.')
-    static_link_args += cc.get_supported_link_arguments('/FORCE:UNRESOLVED')
-    link_args += cc.get_supported_link_arguments('/FORCE:UNRESOLVED')
-  endif
-
   special_files = []
   special_includes = []
   special_objects = []
@@ -3587,7 +3579,6 @@ foreach built_lib : built_libs
       dependencies: deps,
       include_directories: common_incs + special_includes,
       link_with: link_with,
-      link_args: static_link_args,
       c_args: c_args,
       pic: conf.get('pic') == 1,
       implicit_include_directories : false,
@@ -3602,7 +3593,6 @@ foreach built_lib : built_libs
     dependencies: deps,
     include_directories: common_incs,
     link_with: link_with,
-    link_args: static_link_args,
     c_args: c_args,
     pic: conf.get('pic') == 1,
     implicit_include_directories : false,
@@ -3664,7 +3654,6 @@ foreach built_lib : built_libs
         c_args: c_args,
         dependencies: test_deps,
         include_directories: common_incs,
-        link_args: static_link_args,
         link_with: [static_lib] + link_with,
         implicit_include_directories : false,
         pie: get_option('b_pie') and (conf.get('pic') == 1),
