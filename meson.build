@@ -1552,6 +1552,7 @@ config_extra = [
   'cbs_av1',
   'cbs_h264',
   'cbs_h265',
+  'cbs_h266',
   'cbs_jpeg',
   'cbs_mpeg2',
   'cbs_vp8',
@@ -1561,6 +1562,7 @@ config_extra = [
   'dnn',
   'dovi_rpu',
   'dvprofile',
+  'evcparse',
   'exif',
   'faandct',
   'faanidct',
@@ -1639,6 +1641,7 @@ config_extra = [
   'vp3dsp',
   'vp56dsp',
   'vp8dsp',
+  'vulkan_encode',
   'wma_freqs',
   'wmv2dsp',
 ]
