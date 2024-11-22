@@ -196,7 +196,7 @@ vs2019 arm64 cross:
 
 .build darwin:
   stage: 'build'
-  image: "registry.freedesktop.org/gstreamer/gstreamer/macos-arm64/14-sonoma:2023-10-25.0"
+  image: "registry.freedesktop.org/gstreamer/gstreamer/macos-arm64/15-sequoia:2024-10-28.0"
   tags:
     - gst-mac-arm
   artifacts:
@@ -207,10 +207,7 @@ vs2019 arm64 cross:
       - "build/meson-logs/*txt"
   before_script:
     - pip3 install --upgrade pip
-    # Block Meson on 1.4.1 -- https://github.com/mesonbuild/meson/issues/13403
-    - pip3 install -U meson==1.4.1
-    # Get ninja
-    - pip3 install -U ninja
+    - pip3 install -U meson ninja
   script:
     - meson setup build
     - meson compile -C build
@@ -224,17 +221,14 @@ iOS arm64 cross:
   extends: '.build darwin'
   stage: 'build'
   script:
-    # Same-architecture cross-builds are broken on 1.4.1
-    # 1.5.0 was meant to fix this, but instead broke detection wholesale
-    # Once 1.5.1 is out, try restoring `system = 'darwin'`
     - |
       cat > ios-cross-file.txt <<EOF
       [host_machine]
-      system = 'ios'
+      system = 'darwin'
+      subsystem = 'ios'
       cpu_family = 'aarch64'
       cpu = 'aarch64'
       endian = 'little'
-      needs_exe_wrapper = true
 
       [properties]
       c_args =      ['-arch', 'arm64', '--sysroot=$(xcrun --sdk iphoneos --show-sdk-path)', '-miphoneos-version-min=11.0']
@@ -243,6 +237,7 @@ iOS arm64 cross:
       cpp_link_args = ['-arch', 'arm64', '--sysroot=$(xcrun --sdk iphoneos --show-sdk-path)', '-miphoneos-version-min=11.0']
       objc_args =      ['-arch', 'arm64', '--sysroot=$(xcrun --sdk iphoneos --show-sdk-path)', '-miphoneos-version-min=11.0']
       objc_link_args = ['-arch', 'arm64', '--sysroot=$(xcrun --sdk iphoneos --show-sdk-path)', '-miphoneos-version-min=11.0']
+      needs_exe_wrapper = true
 
       [binaries]
       ar        = '$(xcrun --find --sdk iphoneos ar)'
