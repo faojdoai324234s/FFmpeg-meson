@@ -150,7 +150,8 @@ with deps@i386:
     # cmd.exe, that's why we use $env:FOO instead of %FOO%
     - cmd.exe /C "C:\BuildTools\Common7\Tools\VsDevCmd.bat -host_arch=amd64 -arch=$env:ARCH &&
         meson build $env:MESON_ARGS &&
-        ninja -C build"
+        ninja -C build &&
+        ninja -C build test"
 
 vs2019:
   extends: '.build windows'
@@ -185,7 +186,7 @@ vs2019 x86:
     - cmd.exe /C "C:\BuildTools\Common7\Tools\VsDevCmd.bat -host_arch=amd64 -arch=$env:ARCH &&
         meson build1 $env:MESON_ARGS"
     - cmd.exe /C "C:\BuildTools\Common7\Tools\VsDevCmd.bat -host_arch=amd64 -arch=$env:ARCH &&
-        meson build2 $env:MESON_ARGS -Dasm=disabled && ninja -C build2"
+        meson build2 $env:MESON_ARGS -Dasm=disabled && ninja -C build2 && ninja -C build2 test"
 
 vs2019 arm64 cross:
   extends: '.build windows'
