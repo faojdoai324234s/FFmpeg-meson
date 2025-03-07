@@ -21,7 +21,7 @@ project('FFmpeg', 'c', 'cpp',
   license: 'LGPL2.1+',
   # Static libraries by default following upstream
   default_options: [ 'buildtype=debugoptimized', 'c_std=c17', 'cpp_std=c++11', 'default_library=static'],
-  version: '7.1',
+  version: '7.1.1',
 )
 
 # HOWTO:
@@ -2813,12 +2813,14 @@ foreach check: x86asm_checks
 endforeach
 
 foreach check : asm_insn_checks
-  asm_inline_checks += [
-    ['"@0@"'.format(check[0]), '@0@_inline'.format(check[1])]
-  ]
-  asm_as_checks += [
-    [check[0], '@0@_external'.format(check[1])]
-  ]
+  if (conf.get(check[1], 0) == 1)
+    asm_inline_checks += [
+      ['"@0@"'.format(check[0]), '@0@_inline'.format(check[1])]
+    ]
+    asm_as_checks += [
+      [check[0], '@0@_external'.format(check[1])]
+    ]
+  endif
 endforeach
 
 asm_archext_list = []

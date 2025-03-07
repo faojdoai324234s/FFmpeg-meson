@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (c) 2018 Mathieu Duponchelle <mathieu@centricular.com>
 #
 # This file is part of the FFmpeg Meson build

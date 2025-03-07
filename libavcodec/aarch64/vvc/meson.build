@@ -32,3 +32,4 @@ libavcodec_aarch64_vvc_slib_optional_sources = {
 
 libavcodec_aarch64_vvc_optional_tests = {
 }
+
