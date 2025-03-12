@@ -21,6 +21,8 @@ stages:
       ninja-build
       build-essential
       git
+  tags:
+    - placeholder-job
 
 .container.debian@common.minimum:
   extends: '.container.debian@common'
