@@ -3637,6 +3637,7 @@ foreach built_lib : built_libs
   )
 
   set_variable('lib@0@_dep'.format(built_lib[0]), declared_dep)
+  meson.override_dependency('lib@0@'.format(built_lib[0]), declared_dep)
 
   if build_tests
     foreach test_ : tests
@@ -3716,7 +3717,8 @@ foreach built_exe : built_exe_list
     override_options: global_overrides,
   )
 
-  set_variable('@0@_exe'.format(built_exe[0]), exe)
+  set_variable('@0@_exe'.format(built_exe), exe)
+  meson.override_find_program(built_exe, exe)
 endforeach
 
 pkg = import('pkgconfig')
