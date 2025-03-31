@@ -22,7 +22,7 @@ stages:
       build-essential
       git
   tags:
-    - placeholder-job
+    - kvm
 
 .container.debian@common.minimum:
   extends: '.container.debian@common'
