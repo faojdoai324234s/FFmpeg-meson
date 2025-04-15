@@ -1964,6 +1964,11 @@ foreach check : all_checks
   name = check[0]
   opt_name = options_map.get(name, name)
 
+  if (name == 'iconv' and get_option(opt_name).disabled())
+    message('Skipping iconv because disabled by the user')
+    continue
+  endif
+
   if check_type == 'func'
     headers = []
   elif check_type == 'header'
@@ -3242,7 +3247,11 @@ endif
 
 add_project_arguments(project_c_args, language: 'c')
 
-libavcodec_optional_deps = [iconv_extra_deps + android_extra_deps]
+libavcodec_optional_deps = [android_extra_deps]
+if (conf.get('iconv') == 1)
+  libavcodec_optional_deps += [iconv_extra_deps]
+endif
+
 libavutil_optional_deps = [vaapi_drm_extra_deps + vaapi_x11_extra_deps + vdpau_x11_extra_deps]
 libswresample_optional_deps = [libsoxr_extra_deps]
 
