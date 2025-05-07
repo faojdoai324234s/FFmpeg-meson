@@ -16,8 +16,8 @@ stages:
     FDO_DISTRIBUTION_VERSION: "bookworm-slim"
     FDO_UPSTREAM_REPO: "gstreamer/meson-ports/ffmpeg"
     FDO_DISTRIBUTION_PACKAGES: >-
-      meson
       python3-setuptools
+      python3-pip
       ninja-build
       build-essential
       git
@@ -25,13 +25,20 @@ stages:
 .container.debian@common.minimum:
   extends: '.container.debian@common'
   variables:
-    FDO_DISTRIBUTION_TAG: "2025-05-07-meson-7.1-minimum"
+    FDO_DISTRIBUTION_TAG: "2025-05-07.1-meson-7.1-minimum"
+    FDO_DISTRIBUTION_EXEC: >-
+      export PIP_BREAK_SYSTEM_PACKAGES=1 &&
+      python3 -m pip install --upgrade pip &&
+      python3 -m pip install meson
 
 .container.debian@common.full:
   extends: '.container.debian@common'
   variables:
-    FDO_DISTRIBUTION_TAG: "2025-05-07-meson-7.1-full"
+    FDO_DISTRIBUTION_TAG: "2025-05-07.1-meson-7.1-full"
     FDO_DISTRIBUTION_EXEC: >-
+      export PIP_BREAK_SYSTEM_PACKAGES=1 &&
+      python3 -m pip install --upgrade pip &&
+      python3 -m pip install meson &&
       echo "deb-src http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list &&
       apt-get update &&
       apt-get build-dep --yes ffmpeg &&
@@ -105,7 +112,7 @@ with deps yasm:
   tags: ['gstreamer']
   variables:
     DEPENDENCIES: >-
-      meson
+      python3-pip
       python3-setuptools
       ninja-build
       build-essential
@@ -118,6 +125,9 @@ no external@i386:
   before_script:
     - apt-get update
     - apt-get install --yes ${DEPENDENCIES}
+    - export PIP_BREAK_SYSTEM_PACKAGES=1
+    - python3 -m pip install --upgrade pip
+    - python3 -m pip install meson
 
 with deps@i386:
   extends:
@@ -128,6 +138,9 @@ with deps@i386:
     - apt-get update
     - apt-get build-dep --yes ffmpeg
     - apt-get install --yes ${DEPENDENCIES}
+    - export PIP_BREAK_SYSTEM_PACKAGES=1
+    - python3 -m pip install --upgrade pip
+    - python3 -m pip install meson
 
 .build windows:
   image: "registry.freedesktop.org/gstreamer/gstreamer/amd64/windows:2025-03-12.0-1.26"
