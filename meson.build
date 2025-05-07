@@ -2034,7 +2034,8 @@ foreach check : all_checks
 
   found = false
 
-  if conf.get(name.underscorify(), 0) == 0
+  # These checks are skipped later, based on the option/config value
+  if true
     defines = opts.get('defines', [])
     has_any_func = opts.get('has_any_func', false)
     c_args = opts.get('c_args', [])
