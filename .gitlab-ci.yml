@@ -21,8 +21,6 @@ stages:
       ninja-build
       build-essential
       git
-  tags:
-    - kvm
 
 .container.debian@common.minimum:
   extends: '.container.debian@common'
@@ -44,12 +42,16 @@ debian-container-build@x86_64@minimum:
     - '.fdo.container-build@debian@x86_64'
     - '.container.debian@common.minimum'
   stage: 'image-build'
+  tags:
+    - kvm
 
 debian-container-build@x86_64@full:
   extends:
     - '.fdo.container-build@debian@x86_64'
     - '.container.debian@common.full'
   stage: 'image-build'
+  tags:
+    - kvm
 
 .build:
   stage: 'build'
