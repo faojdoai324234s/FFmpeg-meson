@@ -98,7 +98,10 @@ with deps yasm:
   extends: '.build withdepsnoyasm'
 
 .build@i386.common:
-  image: 'i386/debian:bookworm'
+  image:
+    name: 'debian:bookworm'
+    docker:
+      platform: linux/i386
   tags: ['gstreamer']
   variables:
     DEPENDENCIES: >-
