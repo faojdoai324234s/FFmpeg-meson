@@ -151,6 +151,7 @@ if host_machine.system() == 'windows'
 endif
 
 conf = configuration_data()
+conf_requested = configuration_data()
 
 compat_objs = []
 
@@ -920,7 +921,6 @@ check_pkg_config = [
   ['libfreetype', ['ft2build.h', 'FT_FREETYPE_H'], ['FT_Init_FreeType'], {'pkg': 'freetype2'}],
   ['libfribidi', ['fribidi.h'], ['fribidi_version_info'], {'pkg': 'fribidi'}],
   ['libjack', ['jack/jack.h'], ['jack_port_get_latency_range'], {'pkg': 'jack'}],
-  ['libjxl', ['jxl/decode.h'], ['JxlDecoderVersion'], {'pkg': 'libjxl', 'version': '>= 0.7.0'}],
   ['libklvanc', ['libklvanc/vanc.h'], ['klvanc_context_create'], {}],
   ['libkvazaar', ['kvazaar.h'], ['kvz_api_get'], {'pkg': 'kvazaar', 'version': '>= 0.8.1'}],
   ['liblc3', ['lc3.h'], ['lc3_hr_setup_encoder'], {'pkg': 'lc3', 'version': ['>= 1.1.0']}],
@@ -1012,6 +1012,13 @@ if get_option('libwebp').allowed()
   ]
 endif
 
+if get_option('libjxl').allowed() and get_option('libjxl_threads').allowed()
+  check_pkg_config += [
+    ['libjxl', ['jxl/decode.h'], ['JxlDecoderVersion'], {'pkg': 'libjxl', 'version': '>= 0.7.0'}],
+    ['libjxl_threads', ['jxl/thread_parallel_runner.h'], ['JxlThreadParallelRunner'], {'pkg': 'libjxl_threads', 'version': '>= 0.7.0', 'preconditions': ['libjxl']}],
+  ]
+endif
+
 foreach check : check_pkg_config
   all_checks += [['pkg-config', check]]
 endforeach
@@ -1063,7 +1070,6 @@ check_components = [
   ['libgsm', ['gsm/gsm.h'], ['gsm_create'], ['gsm']],
   ['libiec61883', ['libiec61883/iec61883.h'], ['iec61883_cmp_connect'], ['raw1394', 'avc1394', 'rom1394', 'iec61883']],
   ['libilbc', ['ilbc.h'], ['WebRtcIlbcfix_InitDecode'], ['lbc']],
-  ['libjxl', ['jxl/thread_parallel_runner.h'], ['JxlThreadParallelRunner'], ['libjxl_threads']],
   ['libm', ['math.h'], ['sin'], ['m'], {'always-check': true}], # always check for libm don't provide an option to disable it
   ['libopenvino', ['c_api/ie_c_api.h'], ['ie_c_api_version'], ['inference_engine_c_api']],
   ['libnpp', ['npp.h'], ['nppGetLibVersion'], ['nppig', 'nppicc', 'nppc', 'nppidei', 'nppif']],
@@ -1953,7 +1959,7 @@ options_map = {
 foreach component : autodetect_libs
   opt_name = options_map.get(component, component)
   if get_option(opt_name).enabled()
-    conf.set10(component, true)
+    conf_requested.set10(component, true)
   endif
 endforeach
 
@@ -2034,8 +2040,7 @@ foreach check : all_checks
 
   found = false
 
-  # These checks are skipped later, based on the option/config value
-  if true
+  if conf.get(name.underscorify(), 0) == 0
     defines = opts.get('defines', [])
     has_any_func = opts.get('has_any_func', false)
     c_args = opts.get('c_args', [])
@@ -3117,6 +3122,7 @@ dep_resolver = find_program('depresolver.py')
 
 res = run_command(dep_resolver, tmpconfig_h, components_h, check: true)
 
+# Reset configuration with the final state
 conf = configuration_data()
 
 split = res.stdout().split('//BEGIN_DEPENDS')
@@ -3240,6 +3246,12 @@ int main() { return 0; }
 ''', name: 'Compiler has stdbit.h')
   common_incs += [include_directories('compat/stdbit')]
 endif
+
+foreach lib: autodetect_libs
+  if conf_requested.get(lib, 0) == 1 and conf.get(lib, 0) == 0
+    error('@0@ requested but not found').format(lib)
+  endif
+endforeach
 
 add_project_arguments(project_c_args, language: 'c')
 

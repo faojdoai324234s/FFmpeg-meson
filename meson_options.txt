@@ -25,6 +25,8 @@ option('libfreetype', type: 'feature', value: 'disabled')
 option('libfribidi', type: 'feature', value: 'disabled')
 option('libjack', type: 'feature', value: 'disabled')
 option('libjxl', type: 'feature', value: 'disabled')
+# Prerequisite for libjxl -- cannot be disabled
+option('libjxl_threads', type: 'feature', value: 'enabled')
 option('libklvanc', type: 'feature', value: 'disabled')
 option('libkvazaar', type: 'feature', value: 'disabled')
 option('liblc3', type: 'feature', value: 'disabled')
