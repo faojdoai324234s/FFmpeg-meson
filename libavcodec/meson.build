@@ -437,7 +437,7 @@ libavcodec_optional_sources = {
   'h264_qsv_encoder' : files('qsvenc_h264.c'),
   'h264_qsv_hwaccel' : files('qsvdec.c'),
   'h264_rkmpp_decoder' : files('rkmppdec.c'),
-  'h264_sei' : files('h264_sei.c','h2645_sei.c'),
+  'h264_sei' : files('h264_sei.c','h2645_sei.c','aom_film_grain.c'),
   'h264_v4l2m2m_decoder' : files('v4l2_m2m_dec.c'),
   'h264_v4l2m2m_encoder' : files('v4l2_m2m_enc.c'),
   'h264_vaapi_encoder' : files('vaapi_encode_h264.c','h264_levels.c','h2645data.c','hw_base_encode_h264.c'),
