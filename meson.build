@@ -120,7 +120,7 @@ project_c_args = [
   '-Wno-address',
 ]
 
-# Work around meson subprojects ignoring default_options
+# Work around meson subprojects ignoring default_options
 # https://github.com/mesonbuild/meson/issues/1889#issuecomment-1275991958
 if meson.is_subproject() and meson.version().version_compare('< 0.63')
   project_c_args += ['-std=c11']
@@ -1929,7 +1929,7 @@ conf.set('uspp_filter', 0)
 if host_machine.system() == 'windows'
   conf.set('symver', 0)
   conf.set('dos_paths', 1)
-  # https://ffmpeg.org/pipermail/ffmpeg-devel/2023-August/313023.html
+  # https://ffmpeg.org/pipermail/ffmpeg-devel/2023-August/313023.html
   project_c_args += cc.get_supported_arguments('-DWIN32_LEAN_AND_MEAN', '-wd4005', '-Wp,-w')
 endif
 
@@ -2557,7 +2557,7 @@ if conf.get('x86') == 1
   # of an x86 context. So I fix those semantics here.
   conf.set10('x86asm', get_option('asm').allowed() and (conf.get('mmx', 1) == 1) and get_option('x86asm').allowed())
 
-  # Manual: Skip Nasm building for iOS simulator because of an Apple lld bug
+  # Manual: Skip Nasm building for iOS simulator because of an Apple lld bug
   # ld: warning: ignoring file libavutil.a, building for iOS Simulator-x86_64 but
   # attempting to link with file built for iOS Simulator-x86_64
   is_simulator = false
@@ -2642,7 +2642,7 @@ if conf.get('x86') == 1
   # because the only compilers still supporting the architecture
   # are the Android NDK and MSYS CLANG32.
   # Thus an additional check on aligned_stack is done here.
-  # See:
+  # See:
   # - https://github.com/android/ndk/issues/693
   # - https://bugs.llvm.org/show_bug.cgi?id=37542
   if is_broken_android_api and conf.get('x86_64') == 0
@@ -2876,7 +2876,7 @@ endif
 can_run_asm_checks = meson.version().version_compare('>=1.2.0')
 
 foreach check : asm_as_checks
-  # It is possible to run compile checks on generated files, however,
+  # It is possible to run compile checks on generated files, however,
   # Meson versions earlier than 1.2.0 do not set the lookup path
   # correctly, causing Python to fail opening it.
   # https://github.com/mesonbuild/meson/issues/11983
@@ -2993,7 +2993,7 @@ arm_skip_checks = conf.get('arm', 0) == 1 and (host_machine.system() == 'linux' 
 if not arm_skip_checks or not can_run_asm_checks
   foreach ext : arch_ext_list_arm
     if ext in asm_archext_list
-      # Skip the usual inline || external -> unsuffixed for these extensions.
+      # Skip the usual inline || external -> unsuffixed for these extensions.
       continue
     endif
     inline = '@0@_inline'.format(ext)
