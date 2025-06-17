@@ -2591,7 +2591,11 @@ if conf.get('x86') == 1
           #
           # See https://crbug.com/911658#c19 for more information. Tracked upstream at
           # https://trac.ffmpeg.org/ticket/7878
-          add_project_link_arguments('-Wl,-z,notext', language: 'c')
+          if host_machine.system() == 'android'
+            warning('Text relocations are required to link assembly code on x86. If you need, please pass -Wl,-z,notext as linker flag.')
+          else
+            add_project_link_arguments('-Wl,-z,notext', language: 'c')
+          endif
       endif
       x86asm_checks += [
         ['vmovdqa32 [eax]{k1}{z}, zmm0', 'avx512_external'],
