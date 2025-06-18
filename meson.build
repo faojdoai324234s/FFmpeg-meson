@@ -146,7 +146,10 @@ thread_dep = dependency('threads')
 
 common_deps = [thread_dep]
 
-if host_machine.system() == 'windows'
+cpu = host_machine.cpu_family()
+host_system = host_machine.system()
+
+if host_system == 'windows'
   common_deps += [cc.find_library('ws2_32')]
 endif
 
@@ -1359,9 +1362,9 @@ check_headers = [
   ['asm/types.h'],
 ]
 
-if host_machine.system() == 'darwin'
+if host_system == 'darwin'
   check_headers += [['dispatch/dispatch.h']]
-elif host_machine.system() == 'android' and get_option('jni').allowed()
+elif host_system == 'android' and get_option('jni').allowed()
   check_headers += [['jni.h']]
 endif
 
@@ -1806,8 +1809,6 @@ endforeach
 
 arch = 'c'
 
-cpu = host_machine.cpu_family()
-
 if cpu == 'x86'
   arch = 'x86'
   conf.set('x86', 1)
@@ -1858,7 +1859,7 @@ if cc.get_id() == 'clang'
     # every single entry point into the libraries or enable -mstackrealign
     # (doing stack realignment in every single function).
 
-    if ['windows', 'freebsd', 'netbsd', 'openbsd'].contains(host_machine.system())
+    if ['windows', 'freebsd', 'netbsd', 'openbsd'].contains(host_system)
       conf.set('aligned_stack', 0)
     else
       project_c_args += cc.get_supported_arguments([
@@ -1926,14 +1927,14 @@ conf.set('frame_thread_encoder', 1)
 conf.set('mcdeint_filter', 0)
 conf.set('uspp_filter', 0)
 
-if host_machine.system() == 'windows'
+if host_system == 'windows'
   conf.set('symver', 0)
   conf.set('dos_paths', 1)
   # https://ffmpeg.org/pipermail/ffmpeg-devel/2023-August/313023.html
   project_c_args += cc.get_supported_arguments('-DWIN32_LEAN_AND_MEAN', '-wd4005', '-Wp,-w')
 endif
 
-if ['linux', 'openbsd', 'android', 'freebsd', 'netbsd'].contains(host_machine.system())
+if ['linux', 'openbsd', 'android', 'freebsd', 'netbsd'].contains(host_system)
   conf.set('section_data_rel_ro', 1)
 endif
 
@@ -2317,7 +2318,7 @@ if conf.get('pthreads') == 0 and conf.get('w32threads') == 0 and conf.get('os2th
   endif
 endif
 
-if host_machine.system() == 'android' and get_option('jni').allowed()
+if host_system == 'android' and get_option('jni').allowed()
   if conf.get('jni_h') == 1 and not (conf.get('pthreads') == 1)
     error('jni not found')
   endif
@@ -2447,7 +2448,7 @@ endif
 # Manual patch for Cairo
 # https://gitlab.freedesktop.org/cairo/cairo/-/merge_requests/265
 if conf.get('librsvg') == 1
-  if conf.get('static') == 1 and host_machine.system() == 'windows'
+  if conf.get('static') == 1 and host_system == 'windows'
     project_c_args += ['-DCAIRO_WIN32_STATIC_BUILD']
   endif
 endif
@@ -2457,7 +2458,7 @@ endif
 # which does not embed mingwex on the archives
 if conf.get('libass') == 1
   test_libass_dep = dependency('libass', required: false, version: '>= 0.11.0', static: conf.get('static').is_odd())
-  if test_libass_dep.found() and cc.has_header('iconv.h', dependencies: test_libass_dep) and host_machine.system() == 'windows'
+  if test_libass_dep.found() and cc.has_header('iconv.h', dependencies: test_libass_dep) and host_system == 'windows'
     conf.set10('libass',
       cc.links('''
         #include <iconv.h>
@@ -2505,7 +2506,7 @@ asm_inline_checks = [
 # of inline assembly to nonlocal labels defined within inline assembly,
 # see https://github.com/llvm/llvm-project/issues/76046.
 # Original bug report: https://github.com/llvm/llvm-project/issues/64127
-if cc.get_id() != 'clang' or host_machine.system() != 'windows'
+if cc.get_id() != 'clang' or host_system != 'windows'
   asm_inline_checks += [
     ['"Label:\\n"', 'inline_asm_nonlocal_labels']
   ]
@@ -2518,9 +2519,9 @@ asm_insn_checks = []
 asm_as_checks = []
 asm_arch_ext_checks = []
 
-if host_machine.system() == 'windows'
+if host_system == 'windows'
   asm_format = conf.get('x86_64') == 1 ? 'win64' : 'win32'
-elif host_machine.system() == 'darwin'
+elif host_system == 'darwin'
   asm_format = conf.get('x86_64') == 1 ? 'macho64' : 'macho32'
 else
   asm_format = conf.get('x86_64') == 1 ? 'elf64' : 'elf32'
@@ -2572,10 +2573,10 @@ if conf.get('x86') == 1
   if conf.get('x86asm') == 1
     conf.set('x86asm', 0)
     nasm_version = '>=0'
-    if host_machine.system() == 'windows'
+    if host_system == 'windows'
       nasm_version = '>=2.12'
     endif
-    x86asm = find_program('nasm', version: nasm_version, required: host_machine.system() in ['windows', 'darwin'])
+    x86asm = find_program('nasm', version: nasm_version, required: host_system in ['windows', 'darwin'])
     x86asm_type = 'nasm'
     if not x86asm.found()
       x86asm = find_program('yasm', required: false)
@@ -2706,7 +2707,7 @@ elif conf.get('arm') == 1
     conf.set('vfp_args', 1)
   elif cc.links(cpp_cond.format('stddef.h', 'defined _M_ARM_FP && _M_ARM_FP >= 30'), name: 'vfp_args_fp')
     conf.set('vfp_args', 1)
-  elif not cc.links(cpp_cond.format('stddef.h', 'defined __ARM_PCS || defined __SOFTFP__'), name: 'arm_pcs_or_softfp') and host_machine.system() != 'darwin'
+  elif not cc.links(cpp_cond.format('stddef.h', 'defined __ARM_PCS || defined __SOFTFP__'), name: 'arm_pcs_or_softfp') and host_system != 'darwin'
     if not cc.has_header_symbol('stddef.h', '__SOFTFP__')
       conf.set('vfp_args', 1)
       conf.set('fpabi', 'vfp')
@@ -2989,7 +2990,7 @@ if conf.get('x86') == 1
   message('Inline assembly direct symbol references available: @0@'.format(conf.get('inline_asm_direct_symbol_refs')))
 endif
 
-arm_skip_checks = conf.get('arm', 0) == 1 and (host_machine.system() == 'linux' or host_machine.system() == 'android')
+arm_skip_checks = conf.get('arm', 0) == 1 and (host_system == 'linux' or host_system == 'android')
 
 # If the ASM checks couldn't be run, we need to update the state
 # of ALL Arm instruction sets
@@ -3151,7 +3152,7 @@ endforeach
 
 dshow_indev_extra_deps = []
 
-if host_machine.system() == 'windows'
+if host_system == 'windows'
   foreach libname: ['psapi', 'ole32', 'strmiids', 'uuid', 'oleaut32', 'shlwapi']
     dshow_indev_extra_deps += [cc.find_library(libname, required: false)]
   endforeach
@@ -3298,9 +3299,9 @@ endif
 
 makedef_args += ['--prefix', extern_prefix]
 
-if host_machine.system() == 'windows'
+if host_system == 'windows'
   makedef_args += ['--os', 'win']
-elif host_machine.system() in ['darwin', 'ios']
+elif host_system in ['darwin', 'ios']
   makedef_args += ['--os', 'darwin']
 else
   makedef_args += ['--os', 'linux']
@@ -3320,7 +3321,7 @@ final_conf.set_quoted('FFMPEG_DATADIR', join_paths(get_option('prefix'), get_opt
 final_conf.set_quoted('AVCONV_DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
 final_conf.set_quoted('CC_IDENT', '@0@ @1@'.format(cc.get_id(), cc.version()))
 final_conf.set_quoted('BUILDSUF', '')
-final_conf.set_quoted('SLIBSUF', host_machine.system() == 'windows' ? '.dll' : '.so')
+final_conf.set_quoted('SLIBSUF', host_system == 'windows' ? '.dll' : '.so')
 final_conf.set('SWS_MAX_FILTER_SIZE', 256)
 final_conf.set('EXTERN_ASM', extern_prefix)
 final_conf.set_quoted('EXTERN_PREFIX', extern_prefix)
@@ -3426,7 +3427,7 @@ foreach built_lib : built_libs
     sources += get_variable('lib@0@_@1@_slib_sources'.format(built_lib[0], arch), [])
   endif
 
-  if host_machine.system() == 'windows'
+  if host_system == 'windows'
     # In subproject mode, the file that will be read (if present)
     # is the config.h of the *root* project, instead of our config.h.
     # This is because -I folder take effect *after* the .rc
@@ -3565,7 +3566,7 @@ foreach built_lib : built_libs
   endif
 
   version_script = meson.current_build_dir() / 'lib@0@'.format(built_lib[0]) / 'lib@0@.ver'.format(built_lib[0])
-  if host_machine.system() in ['darwin', 'ios']
+  if host_system in ['darwin', 'ios']
     vflag = '-Wl,-exported_symbols_list,@0@'.format(version_script)
   else
     vflag = '-Wl,--version-script,@0@'.format(version_script)
