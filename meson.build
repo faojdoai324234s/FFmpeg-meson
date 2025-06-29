@@ -2511,6 +2511,8 @@ if cc.get_id() != 'clang' or host_system != 'windows'
   asm_inline_checks += [
     ['"Label:\\n"', 'inline_asm_nonlocal_labels']
   ]
+else
+  conf.set('inline_asm_nonlocal_labels', 0)
 endif
 
 extern_prefix = cc.symbols_have_underscore_prefix() ? '_' : ''
@@ -2540,9 +2542,7 @@ if conf.get('pic') == 1
 endif
 
 if conf.get('x86') == 1
-  is_broken_android_api = cc.links(cpp_cond.format('android/api-level.h', '__ANDROID_API__ < 24'), name: 'compiling for Android API <24')
-
-  if is_broken_android_api and conf.get('x86_64') == 0
+  if cc.has_define('__ANDROID__') and conf.get('x86_64') == 0
     # https://stackoverflow.com/questions/34691970/ffmpeg-for-android-neon-build-has-text-relocations/34697703#34697703
     # https://issuetracker.google.com/issues/37067983
     # https://trac.ffmpeg.org/ticket/4928
@@ -2649,6 +2649,7 @@ if conf.get('x86') == 1
   # See:
   # - https://github.com/android/ndk/issues/693
   # - https://bugs.llvm.org/show_bug.cgi?id=37542
+  is_broken_android_api = cc.links(cpp_cond.format('android/api-level.h', '__ANDROID_API__ < 24'), name: 'compiling for Android API <24')
   if is_broken_android_api and conf.get('x86_64') == 0
     warning('''x86 targets prior to Android Nougat (API 24) need
       -mstackrealign to properly align stack for global constructors.
