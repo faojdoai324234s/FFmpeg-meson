@@ -3565,23 +3565,24 @@ foreach built_lib : built_libs
     gen_objects += asm_gen.process(deduped_sources)
   endif
 
-  version_script = meson.current_build_dir() / 'lib@0@'.format(built_lib[0]) / 'lib@0@.ver'.format(built_lib[0])
+  version_script = meson.current_build_dir() / '@0@.def'.format(built_lib[0])
   if host_system in ['darwin', 'ios']
     vflag = '-Wl,-exported_symbols_list,@0@'.format(version_script)
-  else
+  elif host_system in ['linux', 'android']
     vflag = '-Wl,--version-script,@0@'.format(version_script)
+  else
+    vflag = []
   endif
 
   c_args = ['-DHAVE_AV_CONFIG_H', '-DBUILDING_@0@'.format(built_lib[0])]
 
   link_args = cc.get_supported_link_arguments([
-    vflag,
     # Fixes warnings about PIC relocation.
     # See:
     # https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3348#note_2308136
     # https://github.com/google/ExoPlayer/issues/9933#issuecomment-1029775358
     '-Wl,-Bsymbolic'
-  ])
+  ]) + vflag
 
   special_files = []
   special_includes = []
@@ -3644,6 +3645,7 @@ foreach built_lib : built_libs
     c_args: c_args,
     pic: conf.get('pic') == 1,
     vs_module_defs: vs_module_def,
+    link_depends: vs_module_def,
     implicit_include_directories : false,
     override_options: global_overrides,
     install: true,
