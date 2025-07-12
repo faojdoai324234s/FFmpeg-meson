@@ -3289,12 +3289,17 @@ makedef = find_program('compat/windows/makedef.py')
 
 makedef_args = [makedef]
 
-if not is_msvc
+if is_msvc
+  if cc.get_id() == 'msvc'
+    dumpbin = find_program('dumpbin', required: true)
+    makedef_args += ['--dumpbin', dumpbin]
+  else # dumpbin returns LNK4048 with Clang archives
+    nm = find_program('llvm-nm', required: true)
+    makedef_args += ['--nm', nm]
+  endif
+else
   nm = find_program('nm', required: true)
   makedef_args += ['--nm', nm]
-else
-  dumpbin = find_program('dumpbin', required: true)
-  makedef_args += ['--dumpbin', dumpbin]
 endif
 
 makedef_args += ['--prefix', extern_prefix]
@@ -3634,6 +3639,11 @@ foreach built_lib : built_libs
     capture: true
   )
 
+  link_deps = []
+  if host_system not in ['windows', 'cygwin']
+    link_deps = vs_module_def
+  endif
+
   lib = library(built_lib[0],
     objects: static_lib.extract_all_objects(recursive: true),
     dependencies: deps,
@@ -3645,7 +3655,7 @@ foreach built_lib : built_libs
     c_args: c_args,
     pic: conf.get('pic') == 1,
     vs_module_defs: vs_module_def,
-    link_depends: vs_module_def,
+    link_depends: link_deps,
     implicit_include_directories : false,
     override_options: global_overrides,
     install: true,
