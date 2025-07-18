@@ -3289,14 +3289,20 @@ makedef = find_program('compat/windows/makedef.py')
 
 makedef_args = [makedef]
 
-if is_msvc
-  if cc.get_id() == 'msvc'
-    dumpbin = find_program('dumpbin', required: true)
-    makedef_args += ['--dumpbin', dumpbin]
-  else # dumpbin returns LNK4048 with Clang archives
-    nm = find_program('llvm-nm', required: true)
-    makedef_args += ['--nm', nm]
+if cc.get_id() in ['clang', 'clang-cl']
+  # dumpbin returns LNK4048 with Clang archives
+  # FreeBSD nm returns "file format not recognized" with the same
+  nm = find_program('llvm-nm', required: false)
+  if not nm.found()
+    if host_system not in ['darwin', 'ios', 'android']
+      warning('llvm-nm not found, you may experience problems when creating a shared library.')
+    endif
+    nm = find_program('nm')
   endif
+  makedef_args += ['--nm', nm]
+elif is_msvc
+  dumpbin = find_program('dumpbin', required: true)
+  makedef_args += ['--dumpbin', dumpbin]
 else
   nm = find_program('nm', required: true)
   makedef_args += ['--nm', nm]
