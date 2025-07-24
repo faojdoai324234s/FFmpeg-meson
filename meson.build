@@ -476,6 +476,7 @@ system_libraries = [
   'bcrypt',
   'vaapi_drm',
   'vaapi_x11',
+  'vaapi_win32',
   'vdpau_x11',
 ]
 
@@ -1128,6 +1129,8 @@ check_components = [
     {'preconditions': ['vaapi']}],
   ['vaapi_x11', ['va/va.h', 'va/va_x11.h'], ['vaGetDisplay'], ['va', 'va-x11', 'X11'],
     {'preconditions': ['vaapi', 'xlib_x11']}],
+  ['vaapi_win32', ['va/va.h', 'va/va_win32.h'], ['vaGetDisplayWin32'], ['va', 'va-win32'],
+    {'preconditions': ['vaapi']}],
   ['vdpau_x11', ['vdpau/vdpau.h', 'vdpau/vdpau_x11.h'], ['vdp_device_create_x11'], ['vdpau', 'X11'],
     {'preconditions' : ['vdpau']}],
   ['libmfx', ['mfx/mfxvideo.h', 'mfx/mfxdefs.h'], ['MFXInit'], ['libmfx'],
