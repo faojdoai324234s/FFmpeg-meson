@@ -2419,18 +2419,18 @@ endif
 # Manual check for libx264
 if conf.get('libx264') == 1
   if is_msvc
-    if not cc.links(cpp_cond.format('x264.h', 'X264_BUILD >= 155'), name: 'libx264 version')
+    if not cc.links('#include <stdint.h>\n' + cpp_cond.format('x264.h', 'X264_BUILD >= 155'), name: 'libx264 version')
       warning('libx264 version must be >= 1.55')
       conf.set('libx264', 0)
     endif
   else
-    if not cc.links(cpp_cond.format('x264.h', 'X264_BUILD >= 158'), name: 'libx264 version')
+    if not cc.links('#include <stdint.h>\n' + cpp_cond.format('x264.h', 'X264_BUILD >= 158'), name: 'libx264 version')
       warning('libx264 version must be >= 1.58')
       conf.set('libx264', 0)
     endif
   endif
-  conf.set10('libx264_hdr10', cc.links(cpp_cond.format('x264.h', 'X264_BUILD >= 163'), name: 'libx264 version'))
-  conf.set10('libx262', cc.links(cpp_cond.format('x264.h', 'X264_MPEG2'), name: 'supports MPEG2 inside x264'))
+  conf.set10('libx264_hdr10', cc.links('#include <stdint.h>\n' + cpp_cond.format('x264.h', 'X264_BUILD >= 163'), name: 'libx264 version'))
+  conf.set10('libx262', cc.links('#include <stdint.h>\n' + cpp_cond.format('x264.h', 'X264_MPEG2'), name: 'supports MPEG2 inside x264'))
 endif
 
 if conf.get('libx265') == 1
