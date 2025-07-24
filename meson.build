@@ -970,7 +970,7 @@ check_pkg_config = [
   ['libvmaf', ['libvmaf.h'], ['compute_vmaf'], {'version': '>= 2.0.0'}],
   ['libvorbis', ['vorbis/codec.h'], ['vorbis_info_init'], {'pkg': 'vorbis'}],
   ['libvorbisenc', ['vorbis/vorbisenc.h'], ['vorbis_encode_init'], {'pkg': 'vorbisenc'}],
-  ['libvpl', ['mfxvideo.h', 'mfxdispatcher.h'], ['MFXLoad'], {'pkg': 'vpl', 'version': '>= 2.6', 'c_args': '-DMFX_DEPRECATED_OFF'}],
+  ['libvpl', ['mfxvideo.h', 'mfxdispatcher.h'], ['MFXLoad'], {'pkg': 'vpl', 'version': '>= 2.6', 'c_args': ['-DMFX_DEPRECATED_OFF']}],
   ['libvvenc', ['vvenc/vvenc.h'], ['MFXLoad'], {'pkg': 'vpl', 'version': '>= 1.6.1'}],
   ['libx264', ['stdint.h', 'x264.h'], ['x264_encoder_encode'], {'pkg': 'x264'}],
   ['libx265', ['x265.h'], ['x265_api_get'], {'pkg': 'x265'}],
