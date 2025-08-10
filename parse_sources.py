@@ -87,21 +87,21 @@ def make_to_meson(path):
 
             if accumulate:
                 ofiles = l
-            elif m := re.match('OBJS-\$\((?P<neg>!?)(?:CONFIG|HAVE)_(?P<label>[^\)]+)\)\s*\+=\s*(?P<files>.+)', l):
+            elif m := re.match(r'OBJS-\$\((?P<neg>!?)(?:CONFIG|HAVE)_(?P<label>[^\)]+)\)\s*\+=\s*(?P<files>.+)', l):
                 label = m.group('label')
                 if m.group('neg'):
                     label = '!' + label
                 ofiles = m.group('files')
-                source_type = 'c' # arguable ^^
-            elif re.match('OBJS-.*HAVE.*\+\=.*', l):
+                source_type = 'c'  # arguable ^^
+            elif re.match(r'OBJS-.*HAVE.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'c'
-            elif re.match('OBJS-(ffmpeg|ffplay)\s+\+\=.*', l):
+            elif re.match(r'OBJS-(ffmpeg|ffplay)\s+\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('OBJS-')[1]
                 source_type = 'c' # arguable ^^
-            elif re.match('DNN-OBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'DNN-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'c'  # arguable too ^^
@@ -113,7 +113,7 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'c'
-            elif re.match('X86ASM-OBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'X86ASM-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'asm'
@@ -121,11 +121,11 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'asm'
-            elif re.match('STLIBOBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'STLIBOBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'slib'
-            elif re.match('SHLIBOBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'SHLIBOBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'shlib'
@@ -137,15 +137,15 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'shlib'
-            elif re.match('TLS-OBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'TLS-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
-                source_type = 'c' # arguable ^^
-            elif re.match('MMX-OBJS-.*CONFIG.*\+\=.*', l):
+                source_type = 'c'  # arguable ^^
+            elif re.match(r'MMX-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'mmx'
-            elif re.match('MMX-OBJS-.*HAVE.*\+\=.*', l):
+            elif re.match(r'MMX-OBJS-.*HAVE.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'mmx'
@@ -153,11 +153,11 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'mmx'
-            elif re.match('ARMV5TE-OBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'ARMV5TE-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'armv5te'
-            elif re.match('ARMV5TE-OBJS-.*HAVE.*\+\=.*', l):
+            elif re.match(r'ARMV5TE-OBJS-.*HAVE.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'armv5te'
@@ -165,11 +165,11 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'armv5te'
-            elif re.match('ARMV6-OBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'ARMV6-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'armv6'
-            elif re.match('ARMV6-OBJS-.*HAVE.*\+\=.*', l):
+            elif re.match(r'ARMV6-OBJS-.*HAVE.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'armv6'
@@ -177,11 +177,11 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'armv6'
-            elif re.match('ARMV8-OBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'ARMV8-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'armv8'
-            elif re.match('ARMV8-OBJS-.*HAVE.*\+\=.*', l):
+            elif re.match(r'ARMV8-OBJS-.*HAVE.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'armv8'
@@ -189,11 +189,11 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'armv8'
-            elif re.match('VFP-OBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'VFP-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'vfp'
-            elif re.match('VFP-OBJS-.*HAVE.*\+\=.*', l):
+            elif re.match(r'VFP-OBJS-.*HAVE.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'vfp'
@@ -201,11 +201,11 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'vfp'
-            elif re.match('NEON-OBJS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'NEON-OBJS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'neon'
-            elif re.match('NEON-OBJS-.*HAVE.*\+\=.*', l):
+            elif re.match(r'NEON-OBJS-.*HAVE.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'neon'
@@ -213,11 +213,11 @@ def make_to_meson(path):
                 label = ''
                 ofiles = l.split('=')[1]
                 source_type = 'neon'
-            elif re.match('TESTPROGS-.*CONFIG.*\+\=.*', l):
+            elif re.match(r'TESTPROGS-.*CONFIG.*\+\=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('CONFIG_')[1].rstrip(' )')
                 source_type = 'test-prog'
-            elif re.match('TESTPROGS-.*HAVE.*\+\=.*', l):
+            elif re.match(r'TESTPROGS-.*HAVE.*\+=.*', l):
                 label, ofiles = l.split('+=')
                 label = label.split('HAVE_')[1].rstrip(' )')
                 source_type = 'test-prog'
