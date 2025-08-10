@@ -5,7 +5,7 @@ libavcodec_x86_vvc_optional_sources = {
 }
 
 libavcodec_x86_vvc_x86asm_optional_sources = {
-  'vvc_decoder' : files('vvc_mc.asm') # MANUAL
+  'vvc_decoder' : files('vvc_alf.asm','vvc_dmvr.asm','vvc_mc.asm','vvc_of.asm','vvc_sad.asm'), # MANUAL
 }
 
 libavcodec_x86_vvc_armv5te_optional_sources = {
