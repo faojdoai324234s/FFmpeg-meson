@@ -203,33 +203,6 @@ libavutil_optional_sources = {
   'vulkan' : files('hwcontext_vulkan.c','vulkan.c'),
 }
 
-libavutil_x86asm_optional_sources = {
-}
-
-libavutil_armv5te_optional_sources = {
-}
-
-libavutil_armv6_optional_sources = {
-}
-
-libavutil_armv8_optional_sources = {
-}
-
-libavutil_neon_optional_sources = {
-}
-
-libavutil_vfp_optional_sources = {
-}
-
-libavutil_mmx_optional_sources = {
-}
-
-libavutil_shlib_optional_sources = {
-}
-
-libavutil_slib_optional_sources = {
-}
-
 libavutil_tests = [
   ['adler32', files('tests/adler32.c')],
   ['aes', files('tests/aes.c')],

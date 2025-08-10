@@ -33,39 +33,9 @@ libswscale_headers = files(
   'version_major.h',
 )
 
-libswscale_optional_sources = {
-}
-
-libswscale_x86asm_optional_sources = {
-}
-
-libswscale_armv5te_optional_sources = {
-}
-
-libswscale_armv6_optional_sources = {
-}
-
-libswscale_armv8_optional_sources = {
-}
-
-libswscale_neon_optional_sources = {
-}
-
-libswscale_vfp_optional_sources = {
-}
-
-libswscale_mmx_optional_sources = {
-}
-
 libswscale_shlib_sources = files(
   'log2_tab.c',
 )
-
-libswscale_shlib_optional_sources = {
-}
-
-libswscale_slib_optional_sources = {
-}
 
 libswscale_tests = [
   ['colorspace', files('tests/colorspace.c')],
@@ -73,9 +43,6 @@ libswscale_tests = [
   ['pixdesc_query', files('tests/pixdesc_query.c')],
   # MANUAL ['swscale', files('tests/swscale.c')],
 ]
-
-libswscale_optional_tests = {
-}
 
 #### --- END GENERATED --- ####
 

@@ -19,39 +19,6 @@ libpostproc_headers = files(
   'version_major.h',
 )
 
-libpostproc_optional_sources = {
-}
-
-libpostproc_x86asm_optional_sources = {
-}
-
-libpostproc_armv5te_optional_sources = {
-}
-
-libpostproc_armv6_optional_sources = {
-}
-
-libpostproc_armv8_optional_sources = {
-}
-
-libpostproc_neon_optional_sources = {
-}
-
-libpostproc_vfp_optional_sources = {
-}
-
-libpostproc_mmx_optional_sources = {
-}
-
-libpostproc_shlib_optional_sources = {
-}
-
-libpostproc_slib_optional_sources = {
-}
-
-libpostproc_optional_tests = {
-}
-
 #### --- END GENERATED --- ####
 
 # Version file

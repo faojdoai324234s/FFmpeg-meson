@@ -620,36 +620,9 @@ libavfilter_optional_sources = {
   'zscale_filter' : files('vf_zscale.c'),
 }
 
-libavfilter_x86asm_optional_sources = {
-}
-
-libavfilter_armv5te_optional_sources = {
-}
-
-libavfilter_armv6_optional_sources = {
-}
-
-libavfilter_armv8_optional_sources = {
-}
-
-libavfilter_neon_optional_sources = {
-}
-
-libavfilter_vfp_optional_sources = {
-}
-
-libavfilter_mmx_optional_sources = {
-}
-
 libavfilter_shlib_sources = files(
   'log2_tab.c',
 )
-
-libavfilter_shlib_optional_sources = {
-}
-
-libavfilter_slib_optional_sources = {
-}
 
 libavfilter_tests = [
   ['drawutils', files('tests/drawutils.c')],
@@ -657,9 +630,6 @@ libavfilter_tests = [
   ['formats', files('tests/formats.c')],
   # MANUAL ['integral', files('tests/integral.c')],
 ]
-
-libavfilter_optional_tests = {
-}
 
 languages_map += {
   'coreimage_filter': ['objc'],

@@ -35,9 +35,6 @@ libavcodec_arm_optional_sources = {
   'vp9_decoder' : files('vp9dsp_init_10bpp_arm.c','vp9dsp_init_12bpp_arm.c','vp9dsp_init_arm.c'),
 }
 
-libavcodec_arm_x86asm_optional_sources = {
-}
-
 libavcodec_arm_armv5te_optional_sources = {
   'idctdsp' : files('idctdsp_init_armv5te.c','simple_idct_armv5te.S'),
   'mlp_decoder' : files('mlpdsp_armv5te.S'),
@@ -59,9 +56,6 @@ libavcodec_arm_armv6_optional_sources = {
   'startcode' : files('startcode_armv6.S'),
   'truehd_decoder' : files('mlpdsp_armv6.S'),
   'vp8dsp' : files('vp8_armv6.S','vp8dsp_init_armv6.c','vp8dsp_armv6.S'),
-}
-
-libavcodec_arm_armv8_optional_sources = {
 }
 
 libavcodec_arm_neon_optional_sources = {
@@ -96,17 +90,5 @@ libavcodec_arm_neon_optional_sources = {
 libavcodec_arm_vfp_optional_sources = {
   'dca_decoder' : files('synth_filter_vfp.S'),
   'fmtconvert' : files('fmtconvert_vfp.S'),
-}
-
-libavcodec_arm_mmx_optional_sources = {
-}
-
-libavcodec_arm_shlib_optional_sources = {
-}
-
-libavcodec_arm_slib_optional_sources = {
-}
-
-libavcodec_arm_optional_tests = {
 }
 

@@ -10,36 +10,6 @@ fftools_optional_sources = {
   # MANUAL 'ffplay ' : files('ffplay_renderer.c'),
 }
 
-fftools_x86asm_optional_sources = {
-}
-
-fftools_armv5te_optional_sources = {
-}
-
-fftools_armv6_optional_sources = {
-}
-
-fftools_armv8_optional_sources = {
-}
-
-fftools_neon_optional_sources = {
-}
-
-fftools_vfp_optional_sources = {
-}
-
-fftools_mmx_optional_sources = {
-}
-
-fftools_shlib_optional_sources = {
-}
-
-fftools_slib_optional_sources = {
-}
-
-fftools_optional_tests = {
-}
-
 #### --- END GENERATED --- ####
 
 ffmpeg_sources = files(

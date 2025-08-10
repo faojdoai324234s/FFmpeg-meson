@@ -1117,34 +1117,10 @@ libavcodec_optional_sources = {
   'zmbv_encoder' : files('zmbvenc.c'),
 }
 
-libavcodec_x86asm_optional_sources = {
-}
-
-libavcodec_armv5te_optional_sources = {
-}
-
-libavcodec_armv6_optional_sources = {
-}
-
-libavcodec_armv8_optional_sources = {
-}
-
-libavcodec_neon_optional_sources = {
-}
-
-libavcodec_vfp_optional_sources = {
-}
-
-libavcodec_mmx_optional_sources = {
-}
-
 libavcodec_shlib_sources = files(
   'log2_tab.c',
   'reverse.c',
 )
-
-libavcodec_shlib_optional_sources = {
-}
 
 libavcodec_slib_optional_sources = {
   'avformat' : files('to_upper4.c'),

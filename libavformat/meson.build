@@ -643,27 +643,6 @@ libavformat_optional_sources = {
   'yuv4mpegpipe_muxer' : files('yuv4mpegenc.c'),
 }
 
-libavformat_x86asm_optional_sources = {
-}
-
-libavformat_armv5te_optional_sources = {
-}
-
-libavformat_armv6_optional_sources = {
-}
-
-libavformat_armv8_optional_sources = {
-}
-
-libavformat_neon_optional_sources = {
-}
-
-libavformat_vfp_optional_sources = {
-}
-
-libavformat_mmx_optional_sources = {
-}
-
 libavformat_shlib_sources = files(
   'log2_tab.c',
   'to_upper4.c',
@@ -687,9 +666,6 @@ libavformat_shlib_optional_sources = {
   'spdif_muxer' : files('dca_sample_rate_tab.c'),
 }
 
-libavformat_slib_optional_sources = {
-}
-
 libavformat_tests = [
   # MANUAL ['seek', files('tests/seek.c')],
   ['url', files('tests/url.c')],
@@ -699,8 +675,6 @@ libavformat_tests = [
 libavformat_optional_tests = {
   'ffrtmpcrypt_protocol' : [
     ['rtmpdh', files('tests/rtmpdh.c')],
-  ],
-  'fifo_muxer' : [
   ],
   'imf_demuxer' : [
     ['imf', files('tests/imf.c')],

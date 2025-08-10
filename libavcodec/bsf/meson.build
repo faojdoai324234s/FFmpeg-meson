@@ -46,33 +46,3 @@ libavcodec_bsf_optional_sources = {
   'vvc_mp4toannexb_bsf' : files('vvc_mp4toannexb.c'),
 }
 
-libavcodec_bsf_x86asm_optional_sources = {
-}
-
-libavcodec_bsf_armv5te_optional_sources = {
-}
-
-libavcodec_bsf_armv6_optional_sources = {
-}
-
-libavcodec_bsf_armv8_optional_sources = {
-}
-
-libavcodec_bsf_neon_optional_sources = {
-}
-
-libavcodec_bsf_vfp_optional_sources = {
-}
-
-libavcodec_bsf_mmx_optional_sources = {
-}
-
-libavcodec_bsf_shlib_optional_sources = {
-}
-
-libavcodec_bsf_slib_optional_sources = {
-}
-
-libavcodec_bsf_optional_tests = {
-}
-

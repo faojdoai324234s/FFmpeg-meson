@@ -58,33 +58,9 @@ libavdevice_optional_sources = {
   'xv_outdev' : files('xv.c'),
 }
 
-libavdevice_x86asm_optional_sources = {
-}
-
-libavdevice_armv5te_optional_sources = {
-}
-
-libavdevice_armv6_optional_sources = {
-}
-
-libavdevice_armv8_optional_sources = {
-}
-
-libavdevice_neon_optional_sources = {
-}
-
-libavdevice_vfp_optional_sources = {
-}
-
-libavdevice_mmx_optional_sources = {
-}
-
 libavdevice_shlib_optional_sources = {
   'decklink_indev' : files('reverse.c'),
   'decklink_outdev' : files('ccfifo.c'),
-}
-
-libavdevice_slib_optional_sources = {
 }
 
 libavdevice_optional_tests = {

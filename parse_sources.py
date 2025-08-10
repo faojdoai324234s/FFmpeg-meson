@@ -317,6 +317,9 @@ def make_to_meson(path):
     )
 
     for source_type, map_ in source_types:
+        if all(len(fs) == 0 for fs in map_.values()):
+            continue
+
         default_sources = map_.pop('', [])
 
         if default_sources:
@@ -339,13 +342,18 @@ def make_to_meson(path):
                 add_source(f, source, prefix='  ', suffix=',\n')
             f.write(')\n\n')
 
+        if len(map_) == 0:
+            continue  # No more entries to fill
+
         f.write('%soptional_sources = {\n' % '_'.join((path.replace('/', '_'), source_type)))
         for label in sorted (map_):
+            l = len (map_[label])
+            if l == 0:
+                continue
             if label in skipped:
                 f.write("  # '%s' : files(" % label.lower())
             else:
                 f.write("  '%s' : files(" % label.lower())
-            l = len (map_[label])
             for i, source in enumerate(map_[label]):
                 if '$' in source:
                     print ('Warning: skipping %s' % source)
@@ -371,18 +379,22 @@ def make_to_meson(path):
             f.write("  ['%s', files('tests/%s')],\n" % (testname, basename))
         f.write(']\n\n')
 
-    f.write('%s_optional_tests = {\n' % path.replace('/', '_'))
-    for label in sorted (test_source_map):
-        f.write("  '%s' : [\n" % label.lower())
-        for source in test_source_map[label]:
-            if '$' in source:
-                print ('Warning: skipping %s' % source)
+    if test_source_map:
+        f.write('%s_optional_tests = {\n' % path.replace('/', '_'))
+        for label in sorted (test_source_map):
+            test_sources = test_source_map[label]
+            if len(test_sources) == 0:
                 continue
-            basename = os.path.basename(source)
-            testname = os.path.splitext(basename)[0]
-            f.write("    ['%s', files('tests/%s')],\n" % (testname, basename))
-        f.write('  ],\n')
-    f.write('}\n\n')
+            f.write("  '%s' : [\n" % label.lower())
+            for source in test_sources:
+                if '$' in source:
+                    print ('Warning: skipping %s' % source)
+                    continue
+                basename = os.path.basename(source)
+                testname = os.path.splitext(basename)[0]
+                f.write("    ['%s', files('tests/%s')],\n" % (testname, basename))
+            f.write('  ],\n')
+        f.write('}\n\n')
 
     if languages_map:
         f.write('languages_map += {\n')

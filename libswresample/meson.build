@@ -30,43 +30,13 @@ libswresample_optional_sources = {
   'libsoxr' : files('soxr_resample.c'),
 }
 
-libswresample_x86asm_optional_sources = {
-}
-
-libswresample_armv5te_optional_sources = {
-}
-
-libswresample_armv6_optional_sources = {
-}
-
-libswresample_armv8_optional_sources = {
-}
-
-libswresample_neon_optional_sources = {
-}
-
-libswresample_vfp_optional_sources = {
-}
-
-libswresample_mmx_optional_sources = {
-}
-
 libswresample_shlib_sources = files(
   'log2_tab.c',
 )
 
-libswresample_shlib_optional_sources = {
-}
-
-libswresample_slib_optional_sources = {
-}
-
 libswresample_tests = [
   ['swresample', files('tests/swresample.c')],
 ]
-
-libswresample_optional_tests = {
-}
 
 #### --- END GENERATED --- ####
 

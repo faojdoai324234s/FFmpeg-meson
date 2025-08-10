@@ -114,7 +114,7 @@ libavcodec_x86_x86asm_optional_sources = {
   'lpc' : files('lpc.asm'),
   'lscr_decoder' : files('pngdsp.asm'),
   'me_cmp' : files('me_cmp.asm'),
-  'mlp_decoder' : [], # MANUAL 
+  'mlp_decoder' : files('mlpdsp.asm'),
   'mpeg4_decoder' : files('xvididct.asm'),
   'mpegaudiodsp' : files('dct32.asm','imdct36.asm'),
   'mpegvideoenc' : files('mpegvideoencdsp.asm'),
@@ -122,7 +122,7 @@ libavcodec_x86_x86asm_optional_sources = {
   'opus_encoder' : files('celt_pvq_search.asm'),
   'pixblockdsp' : files('pixblockdsp.asm'),
   'png_decoder' : files('pngdsp.asm'),
-  'prores_decoder' : [], # MANUAL
+  'prores_decoder' : files('proresdsp.asm'),
   'qpeldsp' : files('qpeldsp.asm','fpel.asm','qpel.asm'),
   'rv34dsp' : files('rv34dsp.asm'),
   'rv40_decoder' : files('rv40dsp.asm'),
@@ -145,35 +145,11 @@ libavcodec_x86_x86asm_optional_sources = {
   'webp_decoder' : files('vp8dsp.asm'),
 }
 
-libavcodec_x86_armv5te_optional_sources = {
-}
-
-libavcodec_x86_armv6_optional_sources = {
-}
-
-libavcodec_x86_armv8_optional_sources = {
-}
-
-libavcodec_x86_neon_optional_sources = {
-}
-
-libavcodec_x86_vfp_optional_sources = {
-}
-
 libavcodec_x86_mmx_optional_sources = {
   'fdctdsp' : files('fdct.c'),
   'snow_decoder' : files('snowdsp.c'),
   'snow_encoder' : files('snowdsp.c'),
   'vc1dsp' : files('vc1dsp_mmx.c'),
-}
-
-libavcodec_x86_shlib_optional_sources = {
-}
-
-libavcodec_x86_slib_optional_sources = {
-}
-
-libavcodec_x86_optional_tests = {
 }
 
 #### --- END GENERATED --- ####

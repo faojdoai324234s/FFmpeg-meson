@@ -89,33 +89,6 @@ libavfilter_x86_x86asm_optional_sources = {
   'yadif_filter' : files('vf_yadif.asm','yadif-16.asm','yadif-10.asm'),
 }
 
-libavfilter_x86_armv5te_optional_sources = {
-}
-
-libavfilter_x86_armv6_optional_sources = {
-}
-
-libavfilter_x86_armv8_optional_sources = {
-}
-
-libavfilter_x86_neon_optional_sources = {
-}
-
-libavfilter_x86_vfp_optional_sources = {
-}
-
-libavfilter_x86_mmx_optional_sources = {
-}
-
-libavfilter_x86_shlib_optional_sources = {
-}
-
-libavfilter_x86_slib_optional_sources = {
-}
-
-libavfilter_x86_optional_tests = {
-}
-
 #### --- END GENERATED --- ####
 
 # This file results in empty codegen and empty PDB generation otherwise.

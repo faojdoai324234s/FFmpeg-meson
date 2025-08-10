@@ -26,15 +26,6 @@ libavcodec_aarch64_optional_sources = {
   'vp9_decoder' : files('vp9dsp_init_10bpp_aarch64.c','vp9dsp_init_12bpp_aarch64.c','vp9mc_aarch64.S','vp9dsp_init_aarch64.c'),
 }
 
-libavcodec_aarch64_x86asm_optional_sources = {
-}
-
-libavcodec_aarch64_armv5te_optional_sources = {
-}
-
-libavcodec_aarch64_armv6_optional_sources = {
-}
-
 libavcodec_aarch64_armv8_optional_sources = {
   'videodsp' : files('videodsp.S'),
 }
@@ -61,21 +52,6 @@ libavcodec_aarch64_neon_optional_sources = {
   'vorbis_decoder' : files('vorbisdsp_neon.S'),
   'vp8dsp' : files('vp8dsp_neon.S'),
   'vp9_decoder' : files('vp9itxfm_16bpp_neon.S','vp9itxfm_neon.S','vp9lpf_16bpp_neon.S','vp9lpf_neon.S','vp9mc_16bpp_neon.S','vp9mc_neon.S'),
-}
-
-libavcodec_aarch64_vfp_optional_sources = {
-}
-
-libavcodec_aarch64_mmx_optional_sources = {
-}
-
-libavcodec_aarch64_shlib_optional_sources = {
-}
-
-libavcodec_aarch64_slib_optional_sources = {
-}
-
-libavcodec_aarch64_optional_tests = {
 }
 
 #### --- END GENERATED --- ####
