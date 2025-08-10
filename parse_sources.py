@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, see <http://www.gnu.org/licenses/>.
 
-
+import itertools
 import re
 import os
 from pathlib import Path
@@ -37,9 +37,11 @@ SOURCE_TYPE_EXTS_MAP = {
     'mmx': ['c'],
     'shlib': ['c'],
     'slib': ['c'],
+    'cuda': ['cu'],
 }
 SOURCE_TYPE_DOUBLE_EXTS_MAP = {
-    'metallib.o': ['metal']
+    'metallib.o': ['metal'],
+    'ptx.o': ['cu']
 }
 SOURCE_TYPE_DIRS = {'test-prog': 'tests'}
 
@@ -235,12 +237,13 @@ def make_to_meson(path):
             accumulate = ofiles.endswith('\\')
             ofiles = ofiles.strip('\\')
             ofiles = ofiles.split()
-            exts = SOURCE_TYPE_EXTS_MAP[source_type]
             ifiles = []
             for ofile in ofiles:
                 basename = ofile.split('.')
                 if len(basename) > 2:
                     exts = SOURCE_TYPE_DOUBLE_EXTS_MAP.get('.'.join(basename[1:]), [])
+                else:
+                    exts = SOURCE_TYPE_EXTS_MAP[source_type]
                 fname = basename[0]
                 for ext in exts:
                     tmpf = fname + '.' + ext
@@ -303,8 +306,19 @@ def make_to_meson(path):
 
     f = io.StringIO()
 
+    c_source_maps = defaultdict(list)
+    cuda_source_maps = defaultdict(list)
+    for k, v in source_maps['c'].items():
+        def is_cu(f):
+            return f.endswith('.cu')
+        for k2, v2 in itertools.groupby(sorted(v, key=is_cu), is_cu):
+            if k2:
+                cuda_source_maps[k].extend(list(v2))
+            else:
+                c_source_maps[k].extend(list(v2))
+
     source_types = (
-        ('', source_maps['c']),
+        ('', c_source_maps),
         ('x86asm_', source_maps['asm']),
         ('armv5te_', source_maps['armv5te']),
         ('armv6_', source_maps['armv6']),
@@ -313,7 +327,8 @@ def make_to_meson(path):
         ('vfp_', source_maps['vfp']),
         ('mmx_', source_maps['mmx']),
         ('shlib_', source_maps['shlib']),
-        ('slib_', source_maps['slib'])
+        ('slib_', source_maps['slib']),
+        ('cuda_', cuda_source_maps),
     )
 
     for source_type, map_ in source_types:

@@ -104,7 +104,8 @@ option('coreservices', type: 'feature', value: 'auto')
 option('crystalhd', type: 'feature', value: 'auto')
 option('cuda', type: 'feature', value: 'disabled')
 option('cuvid', type: 'feature', value: 'disabled')
-option('ff_cuda_llvm', type: 'feature', value: 'disabled') # ff_cuda_llvm in ffmpeg
+option('ff_cuda_nvcc', type: 'feature', value: 'disabled') # cuda_nvcc in ffmpeg
+option('ff_cuda_llvm', type: 'feature', value: 'auto') # cuda_llvm in ffmpeg
 option('ff_cuda_sdk', type: 'feature', value: 'auto') # cuda_sdk in ffmpeg
 option('d3d11va', type: 'feature', value: 'auto')
 option('d3d12va', type: 'feature', value: 'auto')

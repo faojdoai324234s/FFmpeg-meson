@@ -17,7 +17,7 @@
 # License along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 project('FFmpeg', 'c', 'cpp',
-  meson_version: '>= 1.1.0',
+  meson_version: '>= 1.2.0',
   license: 'LGPL2.1+',
   # Static libraries by default following upstream
   default_options: [ 'buildtype=debugoptimized', 'c_std=c17', 'cpp_std=c++11', 'default_library=static'],
@@ -563,6 +563,7 @@ conf.set10('faandct', true)
 conf.set10('faanidct', true)
 conf.set10('iamf', true)
 conf.set10('optimizations', get_option('optimization') != '0')
+conf.set10('ptx_compression', true)
 conf.set10('runtime_cpudetect', true)
 conf.set10('safe_bitstream_reader', true)
 conf.set10('swscale_alpha', true)
@@ -1953,6 +1954,59 @@ if ['linux', 'openbsd', 'android', 'freebsd', 'netbsd'].contains(host_system)
   conf.set('section_data_rel_ro', 1)
 endif
 
+if get_option('ff_cuda_nvcc').allowed()
+  nvcc_default = find_program('nvcc')
+  nvccflags_default = ['-gencode', 'arch=compute_30,code=sm_30', '-O2']
+
+  tst_nvcc = run_command(nvcc_default, nvccflags_default, capture: true, check: false)
+  if tst_nvcc.stderr().contains('unsupported')
+    nvccflags_default = ['-gencode', 'arch=compute_60,code=sm_60', '-O2']
+  endif
+else
+  nvcc_default = find_program('clang', required: false)
+  nvccflags_default = ['--cuda-gpu-arch=sm_30', '-O2']
+endif
+
+nvccflags = nvccflags_default + ['-std=c++11']
+
+if ['x86_64', 'ppc64', 'aarch64'].contains(host_machine.cpu_family())
+  nvccflags += ['-m64']
+else
+  nvccflags += ['-m32']
+endif
+
+if get_option('ff_cuda_nvcc').allowed()
+  nvccflags += ['-ptx']
+else
+  nvccflags += ['-S', '-nocudalib', '-nocudainc', '--cuda-device-only', '-Wno-c++11-narrowing', '-include', meson.current_source_dir() / 'compat/cuda/cuda_runtime.h']
+endif
+
+check = '''
+extern "C" {
+__global__ void hello(unsigned char *data) {}
+}
+'''
+f = configure_file(
+  command: [python3, '-c', 'import sys; print(sys.argv[1])', '@0@'.format(check)],
+  output: 'cuda_llvm_test.cu',
+  capture: true,
+)
+
+if get_option('ff_cuda_nvcc').allowed()
+  cuda_llvm = run_command(nvcc_default, nvccflags, f, check: false)
+  if cuda_llvm.returncode() != 0
+    error('failed checking for nvcc.')
+  endif
+  conf.set10('cuda_nvcc', true)
+elif get_option('ff_cuda_llvm').allowed()
+  if nvcc_default.found()
+    cuda_llvm = run_command(nvcc_default, nvccflags, f, check: false)
+    conf.set10('cuda_llvm', cuda_llvm.returncode() == 0)
+  else
+    conf.set10('cuda_llvm', false)
+  endif
+endif
+
 foreach f : test_check_framework
   name = f.underscorify().to_lower()
   dep = dependency('appleframeworks', modules: f, required: false)
@@ -1966,6 +2020,7 @@ endforeach
 # Our option names can't be 1:1 mapping because newer meson versions disallow
 # options with language prefixes i.e. "cuda_sdk" in our case
 options_map = {
+  'cuda_nvcc': 'ff_cuda_nvcc',
   'cuda_llvm' : 'ff_cuda_llvm',
   'cuda_sdk' : 'ff_cuda_sdk',
   'linux_fb_h' : 'linux_fbdev',
@@ -2249,6 +2304,12 @@ bin2c = disabler()
 metalcc = disabler()
 metallib = disabler()
 
+bin2c_exe = find_program('ffbuild/bin2c.py', required: true)
+bin2c = generator(bin2c_exe,
+  output : '@BASENAME@.c',
+  arguments: ['@INPUT@', '@OUTPUT@']
+)
+
 if conf.get('metal') == 1
   appleclang_sdk = ''
   # determine the subsystem
@@ -2276,11 +2337,6 @@ if conf.get('metal') == 1
     metallib = generator(xcrun,
       output : '@BASENAME@.metallib',
       arguments: ['-sdk', 'macosx', 'metallib', '--split-module-without-linking', '@INPUT@', '-o', '@OUTPUT@']
-    )
-    bin2c_exe = find_program('ffbuild/bin2c.py', required: get_option('metal'))
-    bin2c = generator(bin2c_exe,
-      output : '@BASENAME@.metallib.c',
-      arguments: ['@INPUT@', '@OUTPUT@']
     )
   else
     conf.set10('metal', false)
@@ -2483,6 +2539,24 @@ if conf.get('libass') == 1
       )
     )
   endif
+endif
+
+# Manual (abridged) check for Zlib/GZIP support
+if conf.get('zlib') == 1
+  conf.set10('zlib_gzip', true)
+  gzip_exe = find_program('gzip', native: true)
+  conf.set10('gzip', gzip_exe.found())
+else
+  conf.set10('ptx_compression', false)
+endif
+
+if conf.get('ptx_compression', 0) == 1
+  gzip_gen = generator(
+    gzip_exe,
+    arguments: ['-nc9', '@INPUT@'],
+    output: '@PLAINNAME@.gz',
+    capture: true,
+  )
 endif
 
 conf.set10('struct_v4l2_frmivalenum_discrete', cc.compiles('''
@@ -3438,6 +3512,7 @@ fs = import('fs')
 foreach built_lib : built_libs
   sources = get_variable('lib@0@_sources'.format(built_lib[0])) + [ffversion_h]
   x86asm_sources = []
+  cuda_sources = []
   tests = get_variable('lib@0@_tests'.format(built_lib[0]), [])
   gen_objects = []
   optional_deps = get_variable('lib@0@_optional_deps'.format(built_lib[0]), [])
@@ -3544,6 +3619,15 @@ foreach built_lib : built_libs
     endif
   endforeach
 
+  if conf.get('cuda_nvcc', 0) == 1 or conf.get('cuda_llvm') == 1
+    optional_sources = get_variable('lib@0@_cuda_optional_sources'.format(built_lib[0]), {})
+    foreach comp_name, comp_sources : optional_sources
+      if conf.get(comp_name, 0) == 1
+        cuda_sources += comp_sources
+      endif
+    endforeach
+  endif
+
   foreach comp_name, comp_tests : optional_tests
     if conf.get(comp_name, 0) == 1
       tests += comp_tests
@@ -3588,6 +3672,24 @@ foreach built_lib : built_libs
         '-o', '@OUTPUT@'])
 
     gen_objects += asm_gen.process(deduped_sources)
+  endif
+
+  if cuda_sources.length() > 0
+    asm_gen = generator(nvcc_default,
+      output : '@BASENAME@.ptx',
+      arguments : [
+        nvccflags,
+        '-o', '@OUTPUT@',
+        '@INPUT@',
+      ]
+    )
+    cuda_objects = asm_gen.process(cuda_sources)
+    if conf.get('ptx_compression') == 1
+      gz_objs = gzip_gen.process(cuda_objects)
+      gen_objects = bin2c.process(gz_objs)
+    else
+      gen_objects = bin2c_with_extension.process(cuda_objects)
+    endif
   endif
 
   version_script = meson.current_build_dir() / '@0@.def'.format(built_lib[0])
