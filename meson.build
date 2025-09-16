@@ -120,6 +120,11 @@ project_c_args = [
   '-Wno-address',
 ]
 
+# Can't set c_args in default_options for a subproject
+if get_option('suppress_warnings') and meson.is_subproject()
+  project_c_args += ['-w']
+endif
+
 # Work around meson subprojects ignoring default_options
 # https://github.com/mesonbuild/meson/issues/1889#issuecomment-1275991958
 if meson.is_subproject() and meson.version().version_compare('< 0.63')

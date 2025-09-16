@@ -2485,3 +2485,4 @@ option('os2threads', type: 'feature', value: 'disabled', description: 'Enable OS
 option('tests', type : 'feature', value : 'auto', description : 'Build tests', yield : true)
 option('large_tests', type : 'feature', value : 'disabled')
 option('assert_level', type: 'integer', min: 0, max: 2, value: 0)
+option('suppress_warnings', type: 'boolean', value: 'false', description: 'Disable all compiler warnings. Only used when built as a subproject.')
