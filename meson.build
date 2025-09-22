@@ -21,7 +21,7 @@ project('FFmpeg', 'c', 'cpp',
   license: 'LGPL2.1+',
   # Static libraries by default following upstream
   default_options: [ 'buildtype=debugoptimized', 'c_std=c17', 'cpp_std=c++11', 'default_library=static'],
-  version: '7.1.1',
+  version: '7.1.2',
 )
 
 # HOWTO:
@@ -123,12 +123,6 @@ project_c_args = [
 # Can't set c_args in default_options for a subproject
 if get_option('suppress_warnings') and meson.is_subproject()
   project_c_args += ['-w']
-endif
-
-# Work around meson subprojects ignoring default_options
-# https://github.com/mesonbuild/meson/issues/1889#issuecomment-1275991958
-if meson.is_subproject() and meson.version().version_compare('< 0.63')
-  project_c_args += ['-std=c11']
 endif
 
 if not cc.compiles('''#include <assert.h>
@@ -242,6 +236,7 @@ arch_ext_list_ppc = [
   'ldbrx',
   'power8',
   'ppc4xx',
+  'vec_xl',
   'vsx',
 ]
 
@@ -1760,6 +1755,12 @@ check_compiles = [
   ['intrinsics_sse2', ['emmintrin.h'], '__m128i test = _mm_setzero_si128();'],
 ]
 
+ldflags = cc.get_supported_link_arguments(
+  '-Wl,-z,noexecstack',
+  '-Wl,-no_warn_duplicated_libraries'
+)
+add_project_link_arguments( ldflags, language: 'c')
+
 check_links = [
   ['stdatomic', ['stdatomic.h'], 'int main(void) {atomic_int foo, bar = -1; atomic_store(&foo, 0); foo += bar;}', {'link_with': ['atomic']}],
   ['stdatomic', ['stdatomic.h'], 'int main(void) {atomic_int foo, bar = -1; atomic_store(&foo, 0); foo += bar;}'],
@@ -1878,6 +1879,14 @@ if cc.get_id() == 'clang'
         '-mllvm -stack-alignment=16',
         '-mstack-alignment=16'
       ])
+  endif
+
+  if host_system in ['darwin', 'ios']
+    # Xcode Clang doesn't default to -fno-common while upstream llvm.org
+    # Clang (and GCC) do. This avoids linker warnings on Xcode 16.3 about
+    # "reducing alignment of section __DATA,__common from 0x8000 to 0x4000
+    # because it exceeds segment maximum alignment".
+    project_c_args += cc.get_supported_arguments('-fno-common')
   endif
 elif cc.get_id() == 'msvc'
   if conf.get('x86_32') == 1
@@ -3889,6 +3898,7 @@ if conf.get('ppc') == 1
     'POWER8': conf.get('power8').is_odd(),
     'PPC 4xx optimizations': conf.get('ppc4xx').is_odd(),
     'dcbzl available': conf.get('dcbzl').is_odd(),
+    'vec_xl available': conf.get('vec_xl').is_odd(),
   }, section: 'PowerPC', bool_yn: true)
 endif
 if conf.get('loongarch') == 1
