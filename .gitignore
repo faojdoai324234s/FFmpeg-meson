@@ -1,5 +1,6 @@
 *.a
 *.o
+*.objs
 *.o.*
 *.d
 *.def
@@ -43,4 +44,7 @@
 /src
 /mapfile
 /tools/python/__pycache__/
-/.meson-subproject-wrap-hash.txt
+/libavcodec/vulkan/*.c
+/libavfilter/vulkan/*.c
+/.*/
+!/.forgejo/
