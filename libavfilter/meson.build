@@ -611,7 +611,7 @@ libavfilter_optional_sources = {
   'xstack_vaapi_filter' : files('vf_stack_vaapi.c','framesync.c','vaapi_vpp.c'),
   'yadif_cuda_filter' : files('vf_yadif_cuda.c','yadif_common.c','cuda/load_helper.c'),
   'yadif_filter' : files('vf_yadif.c','yadif_common.c'),
-  'yadif_videotoolbox_filter' : files('vf_yadif_videotoolbox.m','metal/vf_yadif_videotoolbox.metal','metal/utils.m','yadif_common.c'),
+  'yadif_videotoolbox_filter' : files('vf_yadif_videotoolbox_workaround.m','metal/utils.m','yadif_common.c'), # MANUAL
   'yaepblur_filter' : files('vf_yaepblur.c'),
   'yuvtestsrc_filter' : files('vsrc_testsrc.c'),
   'zmq_filter' : files('f_zmq.c'),
@@ -657,10 +657,10 @@ libavfilter_optional_sources += {'dnn': dnn_sources}
 if conf.get('yadif_videotoolbox_filter') == 1
   gen_objects = []
   x = metalcc.process(
-        files('metal/vf_yadif_videotoolbox.metal',)
-      )
+    files('metal/vf_yadif_videotoolbox.metal',)
+  )
   y = metallib.process(x)
-  gen_objects += bin2c.process(y)
+  gen_objects += bin2c_with_extension.process(y)
   libavfilter_optional_sources += {
     'yadif_videotoolbox_filter' : libavfilter_optional_sources['yadif_videotoolbox_filter'] + gen_objects,
   }
