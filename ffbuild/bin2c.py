@@ -18,9 +18,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    input: Path = args.input
-    output: Path = args.output
-    name: str | None = args.name
+    input = args.input
+    output = args.output
+    name = args.name
 
     if args.name is None:
         name = re.sub(r'[^a-zA-Z0-9]', '_', output.stem)
@@ -31,9 +31,9 @@ if __name__ == '__main__':
         length = os.path.getsize(input)
         tmp.write(f"const unsigned char ff_{name}_data[] = {{")
         while (byte := i.read(1)):
-            tmp.write(f"0x{int.from_bytes(byte):02x}, ")
-        print("0x00 };", file=tmp)
-        print(f"const unsigned int ff_{name}_len = {length};", file=tmp)
+            tmp.write(f"0x{byte.hex()}, ")
+        tmp.write("0x00 };\n")
+        tmp.write(f"const unsigned int ff_{name}_len = {length};\n")
 
     tmp.seek(0)
     shutil.copyfileobj(tmp, output.open('w', encoding='utf-8'), -1)
