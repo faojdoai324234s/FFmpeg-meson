@@ -413,7 +413,7 @@ system_features = [
 system_funcs = [
   'access',
   'aligned_malloc',
-  'arc4random',
+  'arc4random_buf',
   'clock_gettime',
   'closesocket',
   'CommandLineToArgvW',
@@ -1165,8 +1165,8 @@ if get_option('videotoolbox').allowed()
 endif
 
 check_header_funcs = [
+  ['arc4random_buf', ['stdlib.h']],
   ['aligned_malloc', ['malloc.h'], {'funcs': ['_aligned_malloc']}],
-  ['arc4random', ['stdlib.h']],
   ['kbhit', ['conio.h']],
   ['setmode', ['io.h']],
   ['lzo1x_999_compress', ['lzo/lzo1x.h']],
