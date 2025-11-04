@@ -413,7 +413,7 @@ system_features = [
 system_funcs = [
   'access',
   'aligned_malloc',
-  'arc4random',
+  'arc4random_buf',
   'clock_gettime',
   'closesocket',
   'CommandLineToArgvW',
@@ -1165,8 +1165,8 @@ if get_option('videotoolbox').allowed()
 endif
 
 check_header_funcs = [
+  ['arc4random_buf', ['stdlib.h']],
   ['aligned_malloc', ['malloc.h'], {'funcs': ['_aligned_malloc']}],
-  ['arc4random', ['stdlib.h']],
   ['kbhit', ['conio.h']],
   ['setmode', ['io.h']],
   ['lzo1x_999_compress', ['lzo/lzo1x.h']],
@@ -2309,6 +2309,10 @@ bin2c = generator(bin2c_exe,
   output : '@BASENAME@.c',
   arguments: ['@INPUT@', '@OUTPUT@']
 )
+bin2c_with_extension = generator(bin2c_exe,
+  output : '@PLAINNAME@.c',
+  arguments: ['@INPUT@', '@OUTPUT@']
+)
 
 if conf.get('metal') == 1
   appleclang_sdk = ''
@@ -2321,24 +2325,26 @@ if conf.get('metal') == 1
   elif is_tvos == '1'
     appleclang_sdk = 'tvos'
   elif is_macos == '1'
-    appleclang_sdk = 'macos'
+    appleclang_sdk = 'macosx'
   else
     warning('Unable to detect target OS SDK for Metal, assuming macOS')
-    appleclang_sdk = 'macos'
+    appleclang_sdk = 'macosx'
   endif
 
   xcrun = find_program('xcrun', required: true)
 
   if run_command(xcrun, '-sdk', appleclang_sdk, 'metal', '-v', check: false).returncode() == 0
     metalcc = generator(xcrun, 
+      # not metal.air because of Meson's basename component below
       output : '@BASENAME@.metalair',
-      arguments: ['-sdk', 'macosx', 'metal', '@INPUT@', '-o', '@OUTPUT@']
+      arguments: ['-sdk', appleclang_sdk, 'metal', '@INPUT@', '-o', '@OUTPUT@']
     )
     metallib = generator(xcrun,
       output : '@BASENAME@.metallib',
-      arguments: ['-sdk', 'macosx', 'metallib', '--split-module-without-linking', '@INPUT@', '-o', '@OUTPUT@']
+      arguments: ['-sdk', appleclang_sdk, 'metallib', '--split-module-without-linking', '@INPUT@', '-o', '@OUTPUT@']
     )
   else
+    warning('Metal Toolchain missing; please run xcodebuild -downloadComponent MetalToolchain and reconfigure')
     conf.set10('metal', false)
   endif
 endif
